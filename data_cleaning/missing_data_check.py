@@ -18,7 +18,7 @@ def plot_missing_data(df):
     if missing_data.empty:
         print("No missing data to plot.")
         return
-
+ 
     plt.figure(figsize=(10, 6))
     sns.barplot(x=missing_data.index, y=missing_data.values, palette='viridis')
     plt.xticks(rotation=45)
@@ -32,3 +32,4 @@ def plot_missing_data(df):
 # Call the function
 plot_missing_data(df)
 
+    
