@@ -23,14 +23,6 @@
     
   <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
 
-  <style>
-    .stat-card { background: #f8f9fa; border-radius: 10px; padding: 30px 20px; text-align: center; box-shadow: 0 0 10px rgba(0,0,0,0.05); transition: transform 0.2s ease; }
-    .stat-card:hover { transform: translateY(-5px); }
-    .stat-number { font-size: 2.5rem; font-weight: bold; color: #007bff; }
-    .stat-label { font-size: 1.1rem; color: #6c757d; margin-top: 10px; }
-    /* Style for smooth fade-in animation */
-    #prediction-container { transition: opacity 0.5s ease-in-out; }
-  </style>
 </head>
 
 <body class="index-page">
@@ -47,12 +39,14 @@
           <li><a href="#hero" class="active">Home</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#features">Features</a></li>
-          <li><a href="#services">Predict</a></li>
+          <!-- MODIFIED: Link now points directly to the analysis page -->
+          <li><a href="/analysis">Predict</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
 
-      <a class="btn-getstarted" href="#services">Get Started</a>
+      <!-- MODIFIED: Link now points directly to the analysis page -->
+      <a class="btn-getstarted" href="/analysis">Get Started</a>
 
     </div>
   </header>
@@ -60,101 +54,33 @@
   <main class="main">
 
     <section id="hero" class="hero section">
-        <!-- Your existing hero section -->
-        <div class="container" data-aos="fade-up" data-aos-delay="100"><div class="row align-items-center"><div class="col-lg-6"><div class="hero-content" data-aos="fade-up" data-aos-delay="200"><h1 class="mb-4"><br> Batsman vs Bowler <span class="accent-text">Matchup Analysis</span></h1><p class="mb-4 mb-md-5"> Predict your players score.Lets dive into the world of cricket. </p><div class="hero-buttons"><a href="#services" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a></div></div></div><div class="col-lg-6"><div class="hero-image" data-aos="zoom-out" data-aos-delay="300"><img src="{{ url_for('static', filename='assets/img/illustration-1.webp') }}" alt="Hero Image" class="img-fluid"></div></div></div></div>
+        <div class="container" data-aos="fade-up" data-aos-delay="100"><div class="row align-items-center"><div class="col-lg-6"><div class="hero-content" data-aos="fade-up" data-aos-delay="200"><h1 class="mb-4"><br> Batsman vs Bowler <span class="accent-text">Matchup Analysis</span></h1><p class="mb-4 mb-md-5"> Predict your players score.Lets dive into the world of cricket. </p>
+        <!-- MODIFIED: Link now points directly to the analysis page -->
+        <div class="hero-buttons"><a href="/analysis" class="btn btn-primary me-0 me-sm-2 mx-1">Get Started</a></div></div></div><div class="col-lg-6"><div class="hero-image" data-aos="zoom-out" data-aos-delay="300"><img src="{{ url_for('static', filename='assets/img/illustration-1.webp') }}" alt="Hero Image" class="img-fluid"></div></div></div></div>
     </section>
     
     <section id="about" class="about section">
-        <!-- Your existing about section -->
         <div class="container" data-aos="fade-up" data-aos-delay="100"><div class="row align-items-center" data-aos="fade-up" data-aos-delay="200"><div class="col-xl-6"><span class="about-meta">MORE ABOUT US</span><h2 class="about-title">Batsman vs Bowler Matchup Analysis</h2><p class="about-description"> Focuses on analyzing batsman–bowler matchups in cricket using historical performance data and predictive models. By considering factors such as player statistics, number of balls faced, and venue conditions, the system estimates key outcomes like expected runs,dismissal, strike rate, and dismissal rate. The analysis provides valuable insights into player performance dynamics, supporting data-driven strategies for teams and enriching the understanding of the game. </p><ul class="feature-list"><li><i class="bi bi-check-circle-fill"></i> Enables evidence-based decisions and effective in-game tactical changes.</li><li><i class="bi bi-check-circle-fill"></i> Predicts and prevents injuries, extending athletes’ careers and improving team performance.</li><li><i class="bi bi-check-circle-fill"></i> Automated systems reduce bias in officiating, making sports more transparent and credible.</li></ul></div><div class="col-xl-6 text-center"><img src="{{ url_for('static', filename='assets/img/about-image.png') }}" alt="Cricket analysis illustration" class="img-fluid"></div></div></div>
     </section>
     
     <section id="features" class="features section">
-        <!-- Your existing features section -->
-        <div class="container section-title" data-aos="fade-up"><h2>Features</h2><p>The project analyzes batsman–bowler matchups using player stats, balls faced, and venue conditions to predict outcomes like runs, strike rate, and dismissal rate through an interactive UI.</p></div><div class="container"><div class="d-flex justify-content-center"><ul class="nav nav-tabs" data-aos="fade-up" data-aos-delay="100"><li class="nav-item"><a class="nav-link active show" data-bs-toggle="tab" data-bs-target="#features-tab-1"><h4>Key Feature</h4></a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-2"><h4>XGBoost</h4></a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-3"><h4>Random Forest</h4></a></li></ul></div><div class="tab-content" data-aos="fade-up" data-aos-delay="200"><div class="tab-pane fade active show" id="features-tab-1"><div class="row"><div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0 d-flex flex-column justify-content-center"><h3>Key Features</h3><ul><li><i class="bi bi-check2-all"></i> <span>Uses XGBoost and Random Forest Regressor to predict outcomes such as expected runs, strike rate, and dismissal rate.</span></li><li><i class="bi bi-check2-all"></i> <span>Evaluates matchups between individual batsmen and bowlers based on historical performance data.</span></li><li><i class="bi bi-check2-all"></i> <span>Considers number of balls faced and venue conditions to improve prediction accuracy.</span></li><li><i class="bi bi-check2-all"></i> <span>Allows users to select batsman, bowler, and match conditions to view predictions in real time.</span></li></ul></div><div class="col-lg-6 order-1 order-lg-2 text-center"><img src="{{ url_for('static', filename='assets/img/illustration-1.webp') }}" alt="Hero Image" class="img-fluid"></div></div></div></div></div>
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Features</h2><p>The project analyzes batsman–bowler matchups using player stats, balls faced, and venue conditions to predict outcomes like runs, strike rate, and dismissal rate through an interactive UI.</p></div>
+            <div class="container"><div class="d-flex justify-content-center"><ul class="nav nav-tabs" data-aos="fade-up" data-aos-delay="100">
+                <li class="nav-item"><a class="nav-link active show" data-bs-toggle="tab" data-bs-target="#features-tab-1"><h4>Key Feature</h4></a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-2">
+                    <h4>XGBoost</h4></a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-3"><h4>Random Forest</h4></a></li></ul></div><div class="tab-content" data-aos="fade-up" data-aos-delay="200"><div class="tab-pane fade active show" id="features-tab-1"><div class="row">
+                        <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0 d-flex flex-column justify-content-center"><h3>Key Features</h3><ul><li><i class="bi bi-check2-all"></i> <span>Uses XGBoost and Random Forest Regressor to predict outcomes such as expected runs, strike rate, and dismissal rate.</span></li><li><i class="bi bi-check2-all"></i> 
+                            <span>Evaluates matchups between individual batsmen and bowlers based on historical performance data.</span></li><li><i class="bi bi-check2-all"></i> <span>Considers number of balls faced and venue conditions to improve prediction accuracy.</span></li><li><i class="bi bi-check2-all"></i> <span>Allows users to select batsman, bowler, and match conditions to view predictions in real time.</span></li></ul></div>
+                            <div class="col-lg-6 order-1 order-lg-2 text-center"><img src="{{ url_for('static', filename='assets/img/illustration-2.webp') }}" alt="Hero Image" class="img-fluid"></div></div></div></div></div>
     </section>
 
+    <!-- This section now serves as a clean call to action -->
     <section id="services" class="services section light-background">
-        <div class="container section-title" data-aos="fade-up">
-            <h2>Predict Matchup</h2>
-            <p>Select a batsman, then a bowler, then a venue to generate predictions.</p>
-        </div>
-
-        <div class="container" data-aos="fade-up" data-aos-delay="100">
-            
-            <div id="alert-container"></div>
-            
-            <form id="predict-form" class="row g-4">
-
-                <!-- Batsman Dropdown -->
-                <div class="col-lg-3">
-                    <label for="batsman" class="form-label">Select Batsman</label>
-                    <select class="form-select" id="batsman" name="batsman" required>
-                        <option value="" disabled selected>Choose a batsman...</option>
-                        {% for b in batsman_list %}
-                        <option value="{{ b }}">{{ b }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <!-- Bowler Dropdown (Initially Disabled) -->
-                <div class="col-lg-3">
-                    <label for="bowler" class="form-label">Select Bowler</label>
-                    <select class="form-select" id="bowler" name="bowler" required disabled>
-                        <option value="" selected>Select batsman first...</option>
-                    </select>
-                </div>
-
-                <!-- Venue Dropdown (Initially Disabled) -->
-                <div class="col-lg-3">
-                    <label for="venue" class="form-label">Select Venue</label>
-                    <select class="form-select" id="venue" name="venue" required disabled>
-                        <option value="" selected>Select bowler first...</option>
-                    </select>
-                </div>
-
-                <!-- Balls Faced Input -->
-                <div class="col-lg-3">
-                    <label for="ballsFaced" class="form-label">Balls Faced</label>
-                    <input type="number" class="form-control" id="ballsFaced" name="balls" placeholder="Enter balls" value="0" required>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="col-12 text-center mt-4">
-                    <button id="predictBtn" class="btn btn-primary px-5" type="submit" disabled>Predict</button>
-                </div>
-            </form>
-            
-            <div id="prediction-container" class="container mt-5" style="opacity: 0; display: none;">
-                <h3 class="text-center text-primary mb-4">Prediction Results</h3>
-                <div class="row g-4 justify-content-center">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number" id="predicted-runs">--</div>
-                            <div class="stat-label">Predicted Runs</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number" id="dismissal-prob">--</div>
-                            <div class="stat-label">Dismissal</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number" id="dismissal-rate">--</div>
-                            <div class="stat-label">Dismissal Rate</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number" id="strike-rate">--</div>
-                            <div class="stat-label">Strike Rate</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div class="container section-title" data-aos="fade-up">
+          <h2>Predict Matchup</h2>
+          <p>Click the button below to go to the analysis page and start generating predictions.</p>
+          <a href="/analysis" class="btn btn-primary mt-4 px-5 py-2">Go to Analysis Page</a>
+      </div>
     </section>
 
   </main>
@@ -169,150 +95,6 @@
   <script src="{{ url_for('static', filename='assets/vendor/aos/aos.js') }}"></script>
   <script src="{{ url_for('static', filename='assets/js/main.js') }}"></script>
 
-  <!-- MODIFIED: The script has been updated to handle AJAX submission, smooth scrolling, and animations -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const batsmanSelect = document.getElementById('batsman');
-        const bowlerSelect = document.getElementById('bowler');
-        const venueSelect = document.getElementById('venue');
-        const predictBtn = document.getElementById('predictBtn');
-        const predictForm = document.getElementById('predict-form');
-        const predictionContainer = document.getElementById('prediction-container');
-        const alertContainer = document.getElementById('alert-container');
-
-        // --- Animation Function for numbers ---
-        function animateValue(element, start, end, duration, decimalPlaces = 2) {
-            if (start === end) {
-                element.textContent = end.toFixed(decimalPlaces);
-                return;
-            }
-            const range = end - start;
-            let startTime = null;
-
-            function step(timestamp) {
-                if (!startTime) startTime = timestamp;
-                const progress = Math.min((timestamp - startTime) / duration, 1);
-                const currentValue = start + range * progress;
-                element.textContent = currentValue.toFixed(decimalPlaces);
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            }
-            window.requestAnimationFrame(step);
-        }
-
-        // --- Helper to populate dropdowns ---
-        function populateSelect(selectElement, items, placeholder) {
-            selectElement.innerHTML = `<option value="" selected disabled>${placeholder}</option>`;
-            items.forEach(item => {
-                const option = document.createElement('option');
-                option.value = item;
-                option.textContent = item;
-                selectElement.appendChild(option);
-            });
-        }
-        
-        // --- Helper to show alerts ---
-        function showAlert(message) {
-             alertContainer.innerHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`;
-        }
-
-        // --- Event Listeners for Dependent Dropdowns ---
-        batsmanSelect.addEventListener('change', async function() {
-            const selectedBatsman = this.value;
-            bowlerSelect.innerHTML = '<option value="">Loading bowlers...</option>';
-            bowlerSelect.disabled = true;
-            venueSelect.innerHTML = '<option value="">Select bowler first...</option>';
-            venueSelect.disabled = true;
-            predictBtn.disabled = true;
-
-            if (selectedBatsman) {
-                try {
-                    const response = await fetch(`/get_bowlers/${selectedBatsman}`);
-                    const bowlers = await response.json();
-                    populateSelect(bowlerSelect, bowlers, 'Choose a bowler...');
-                    bowlerSelect.disabled = false;
-                } catch (error) { console.error('Failed to fetch bowlers:', error); }
-            }
-        });
-
-        bowlerSelect.addEventListener('change', async function() {
-            const selectedBatsman = batsmanSelect.value;
-            const selectedBowler = this.value;
-            venueSelect.innerHTML = '<option value="">Loading venues...</option>';
-            venueSelect.disabled = true;
-            predictBtn.disabled = true;
-
-            if (selectedBatsman && selectedBowler) {
-                try {
-                    const response = await fetch(`/get_venues/${selectedBatsman}/${selectedBowler}`);
-                    const venues = await response.json();
-                    populateSelect(venueSelect, venues, 'Choose a venue...');
-                    venueSelect.disabled = false;
-                } catch (error) { console.error('Failed to fetch venues:', error); }
-            }
-        });
-
-        venueSelect.addEventListener('change', function() {
-            predictBtn.disabled = !this.value;
-        });
-
-        // --- AJAX Form Submission Logic ---
-        predictForm.addEventListener('submit', async function(event) {
-            event.preventDefault(); // Stop the default page refresh
-            alertContainer.innerHTML = '';
-
-            predictBtn.disabled = true;
-            predictBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Predicting...`;
-
-            try {
-                const formData = new FormData(predictForm);
-                const response = await fetch('/predict', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Prediction failed.');
-                }
-                
-                // Show the results container and scroll to it
-                predictionContainer.style.display = 'block';
-                setTimeout(() => {
-                    predictionContainer.style.opacity = 1;
-                    predictionContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 10);
-
-                // Animate results after a short delay for the scroll to start
-                setTimeout(() => {
-                    const runsEl = document.getElementById('predicted-runs');
-                    const dismissalEl = document.getElementById('dismissal-prob');
-                    const dismissalRateEl = document.getElementById('dismissal-rate');
-                    const strikeRateEl = document.getElementById('strike-rate');
-
-                    animateValue(runsEl, 0, data.predicted_runs || 0, 1000, 2);
-                    animateValue(dismissalRateEl, 0, data.dismissal_rate || 0, 1000, 3);
-                    animateValue(strikeRateEl, 0, data.strike_rate || 0, 1000, 2);
-                    
-                    // For "Yes/No", just update the text without animation
-                    dismissalEl.textContent = data.dismissal_prob || '--';
-                }, 400); // 400ms delay to allow scroll to start
-
-            } catch (error) {
-                console.error('Prediction request failed:', error);
-                showAlert(error.message);
-            } finally {
-                predictBtn.disabled = false;
-                predictBtn.textContent = 'Predict';
-            }
-        });
-    });
-  </script>
 </body>
 </html>
 
