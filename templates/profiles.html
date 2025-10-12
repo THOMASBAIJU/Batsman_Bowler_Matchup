@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Player Profiles - Matchup Predictor</title>
+
+  <!-- Favicons, Fonts, and Vendor CSS -->
+  <link href="{{ url_for('static', filename='assets/img/favicon.png') }}" rel="icon">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <link href="{{ url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='assets/vendor/aos/aos.css') }}" rel="stylesheet">
+  <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    .header { background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 25px rgba(0,0,0,0.07);
+        padding: 25px;
+        margin-bottom: 20px;
+    }
+    .stat-card h4 {
+        font-family: 'Inter', sans-serif;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-bottom: 20px;
+    }
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .stat-item:last-child { border-bottom: none; }
+    .stat-item .label { font-weight: 500; color: #6c757d; }
+    .stat-item .value { font-weight: 700; color: #343a40; }
+    #results-area { transition: opacity 0.5s ease-in-out; }
+
+    /* Player Card Styles */
+    .player-card {
+        background-color: #f8f9fa;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        padding: 0;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 30px;
+        height: 430px; 
+    }
+    .player-card img {
+        width: 100%;
+        height: 280px;
+        object-fit: cover;
+        object-position: top center; 
+    }
+    .player-info {
+        position: relative;
+        padding: 20px;
+        background: white;
+        margin-top: -40px;
+        border-top-left-radius: 40px;
+        border-top-right-radius: 40px;
+    }
+    .player-card h5 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+        font-family: 'Inter', sans-serif;
+    }
+    .player-card .player-role {
+        font-weight: 700;
+        color: #0d6efd;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 1px;
+    }
+    .player-card .player-detail {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="header-container container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
+      <a href="/" class="logo d-flex align-items-center me-auto me-xl-0">
+        <h1 class="sitename">Player Profiles</h1>
+      </a>
+      <nav id="navmenu" class="navmenu">
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/analysis">Predict</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main">
+    <section id="profile-section" class="services section" style="padding-top: 120px;">
+        <div class="container section-title" data-aos="fade-up">
+            <h2>Player Profile & Comparison</h2>
+            <p>Select one player to see their profile, or two to compare them side-by-side.</p>
+        </div>
+
+        <div class="container" data-aos="fade-up" data-aos-delay="100">
+            <div id="alert-container"></div>
+            
+            <div class="row g-3 align-items-end bg-white p-4 rounded-4 shadow-sm mb-5">
+                <div class="col-md-5">
+                    <label for="player1" class="form-label fw-bold">Select Player 1</label>
+                    <select class="form-select" id="player1">
+                        <option value="" selected>Choose a player...</option>
+                        {% for p in all_players_list %}
+                        <option value="{{ p }}">{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label for="player2" class="form-label fw-bold">Select Player 2</label>
+                    <select class="form-select" id="player2">
+                        <option value="" selected>Choose a player...</option>
+                        {% for p in all_players_list %}
+                        <option value="{{ p }}">{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <button id="viewBtn" class="btn btn-primary">View Stats</button>
+                </div>
+            </div>
+            
+            <div id="results-area" class="row"></div>
+        </div>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', filename='assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='assets/vendor/aos/aos.js') }}"></script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const player1Select = document.getElementById('player1');
+        const player2Select = document.getElementById('player2');
+        const viewBtn = document.getElementById('viewBtn');
+        const resultsArea = document.getElementById('results-area');
+
+        async function createImageCardHtml(playerName) {
+            try {
+                const response = await fetch(`/get_player_card/${playerName}`);
+                const data = await response.json();
+                if (!response.ok) return '';
+
+                let detailsHtml = '';
+                if (data.batting_hand && data.batting_hand !== 'N/A') {
+                    detailsHtml = `<p class="player-detail mb-0">${data.batting_hand}</p>`;
+                }
+                if (data.bowling_style && data.bowling_style !== 'N/A') {
+                     detailsHtml += `<p class="player-detail mb-0">${data.bowling_style}</p>`;
+                }
+
+                return `
+                    <div class="player-card" data-aos="fade-up">
+                        <img src="${data.profile_image_url}" alt="${data.player_name}" 
+                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${data.player_name.replace(' ', '+')}&background=0d6efd&color=fff&size=280';">
+                        <div class="player-info">
+                            <h5>${data.player_name}</h5>
+                            <p class="player-role">${data.role}</p>
+                            ${detailsHtml}
+                        </div>
+                    </div>`;
+            } catch (e) {
+                console.error("Could not fetch player card info for", playerName);
+                return '';
+            }
+        }
+
+        function createStatsHtml(playerStats) {
+            let battingHtml = '', bowlingHtml = '';
+
+            if (playerStats.batting) {
+                const stats = playerStats.batting;
+                battingHtml = `
+                    <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+                        <h4>Batting Career</h4>
+                        <div class="stat-item"><span class="label">Total Runs</span><span class="value">${stats.total_runs}</span></div>
+                        <div class="stat-item"><span class="label">Total Balls Faced</span><span class="value">${stats.total_balls_faced}</span></div>
+                        <div class="stat-item"><span class="label">Dismissals</span><span class="value">${stats.total_dismissals}</span></div>
+                        <div class="stat-item"><span class="label">Strike Rate</span><span class="value">${stats.strike_rate}</span></div>
+                        <div class="stat-item"><span class="label">Average</span><span class="value">${stats.average}</span></div>
+                    </div>
+                    <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+                        <h4>Performance vs Bowling Style</h4>
+                        <canvas id="battingChart-${playerStats.name.replace(/ /g, '')}"></canvas>
+                    </div>
+                `;
+            }
+            if (playerStats.bowling) {
+                const stats = playerStats.bowling;
+                bowlingHtml = `
+                    <div class="stat-card" data-aos="fade-up" data-aos-delay="100">
+                        <h4>Bowling Career</h4>
+                        <div class="stat-item"><span class="label">Wickets Taken</span><span class="value">${stats.total_wickets}</span></div>
+                        <div class="stat-item"><span class="label">Runs Conceded</span><span class="value">${stats.total_runs_conceded}</span></div>
+                        <div class="stat-item"><span class="label">Balls Bowled</span><span class="value">${stats.total_balls_bowled}</span></div>
+                        <div class="stat-item"><span class="label">Economy Rate</span><span class="value">${stats.economy_rate}</span></div>
+                        <div class="stat-item"><span class="label">Average</span><span class="value">${stats.bowling_average}</span></div>
+                    </div>
+                    <div class="stat-card" data-aos="fade-up" data-aos-delay="200">
+                        <h4>Performance vs Batting Hand</h4>
+                        <canvas id="bowlingChart-${playerStats.name.replace(/ /g, '')}"></canvas>
+                    </div>
+                `;
+            }
+            return battingHtml + bowlingHtml;
+        }
+
+        function createCharts(playerData, playerName) {
+             if (playerData.batting && playerData.batting.perf_vs_bowling_style) {
+                const ctx = document.getElementById(`battingChart-${playerName.replace(/ /g, '')}`);
+                if (ctx) {
+                    const data = playerData.batting.perf_vs_bowling_style;
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'bar', data: {
+                            labels: data.map(d => d.bowling_style_str),
+                            datasets: [{ label: 'Strike Rate', data: data.map(d => d.strike_rate), backgroundColor: '#0d6efd' }]
+                        }, options: { indexAxis: 'y', responsive: true }
+                    });
+                }
+            }
+            if (playerData.bowling && playerData.bowling.perf_vs_batting_hand) {
+                const ctx = document.getElementById(`bowlingChart-${playerName.replace(/ /g, '')}`);
+                if (ctx) {
+                    const data = playerData.bowling.perf_vs_batting_hand;
+                    new Chart(ctx.getContext('2d'), {
+                        type: 'bar', data: {
+                            labels: data.map(d => d.batting_hand_str),
+                            datasets: [{ label: 'Wickets Taken', data: data.map(d => d.wickets), backgroundColor: '#198754' }]
+                        }, options: { indexAxis: 'y', responsive: true }
+                    });
+                }
+            }
+        }
+        
+        viewBtn.addEventListener('click', async function() {
+            const player1Name = player1Select.value;
+            const player2Name = player2Select.value;
+            resultsArea.innerHTML = '';
+            
+            if (!player1Name && !player2Name) return;
+
+            if (player1Name && player2Name) {
+                // --- TWO PLAYER SIDE-BY-SIDE LAYOUT ---
+                resultsArea.innerHTML = `
+                    <div class="col-lg-6" id="player1-col" data-aos="fade-right"></div>
+                    <div class="col-lg-6" id="player2-col" data-aos="fade-left"></div>`;
+
+                [player1Name, player2Name].forEach(async (playerName, index) => {
+                    const colId = `player${index + 1}-col`;
+                    try {
+                        const statsRes = await fetch(`/get_player_stats/${playerName}`);
+                        const statsData = await statsRes.json();
+                        if (!statsRes.ok) throw new Error(statsData.error);
+                        
+                        statsData.name = playerName; 
+                        const imageHtml = await createImageCardHtml(playerName);
+                        const statsHtml = createStatsHtml(statsData);
+                        
+                        document.getElementById(colId).innerHTML = imageHtml + statsHtml;
+                        setTimeout(() => createCharts(statsData, playerName), 100);
+
+                    } catch (error) {
+                        document.getElementById(colId).innerHTML = `<div class="alert alert-warning">${error.message} for ${playerName}</div>`;
+                    }
+                });
+
+            } else {
+                // --- SINGLE PLAYER LAYOUT ---
+                const playerName = player1Name || player2Name;
+                resultsArea.innerHTML = `
+                    <div class="col-lg-4" id="player-image-col" data-aos="fade-right"></div>
+                    <div class="col-lg-8" id="player-stats-col" data-aos="fade-left"></div>`;
+                
+                try {
+                    const statsRes = await fetch(`/get_player_stats/${playerName}`);
+                    const statsData = await statsRes.json();
+                    if (!statsRes.ok) throw new Error(statsData.error);
+
+                    statsData.name = playerName;
+                    document.getElementById('player-image-col').innerHTML = await createImageCardHtml(playerName);
+                    document.getElementById('player-stats-col').innerHTML = createStatsHtml(statsData);
+                    
+                    setTimeout(() => createCharts(statsData, playerName), 100);
+                } catch(error) {
+                     resultsArea.innerHTML = `<div class="alert alert-warning">${error.message}</div>`;
+                }
+            }
+            
+            setTimeout(() => AOS.refresh(), 50);
+        });
+
+        AOS.init({ duration: 1000, easing: 'ease-in-out', once: true, mirror: false });
+    });
+  </script>
+</body>
+</html>
+

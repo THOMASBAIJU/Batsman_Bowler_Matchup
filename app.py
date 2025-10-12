@@ -24,6 +24,9 @@ MODELS_DIR = "models"
 BATSMAN_MAP_PATH = os.path.join(MAPS_DIR, "batsman_encoding_map.csv")
 BOWLER_MAP_PATH = os.path.join(MAPS_DIR, "bowler_encoding_map.csv")
 VENUE_MAP_PATH = os.path.join(MAPS_DIR, "venue_encoding_map.csv")
+# ADDED: Paths for style maps needed for stats page
+BATTING_HAND_MAP_PATH = os.path.join(MAPS_DIR, "batting_hand_encoding_map.csv")
+BOWLING_STYLE_MAP_PATH = os.path.join(MAPS_DIR, "bowling_style_encoding_map.csv")
 
 
 # ---------------------------------------------------
@@ -31,7 +34,9 @@ VENUE_MAP_PATH = os.path.join(MAPS_DIR, "venue_encoding_map.csv")
 # ---------------------------------------------------
 matchups = {}
 batsman_list = []
+all_players_list = [] # ADDED: For the profiles page dropdown
 name_to_encoding = {}
+encoding_to_name = {} # ADDED: Made this global for stats calculation
 batsman_hand_map = {}
 bowler_style_map = {}
 df_main = pd.DataFrame()
@@ -41,15 +46,22 @@ try:
     df_batsman_map = pd.read_csv(BATSMAN_MAP_PATH)
     df_bowler_map = pd.read_csv(BOWLER_MAP_PATH)
     df_venue_map = pd.read_csv(VENUE_MAP_PATH)
-    for df_map in [df_batsman_map, df_bowler_map, df_venue_map]:
+    df_batting_hand_map = pd.read_csv(BATTING_HAND_MAP_PATH)
+    df_bowling_style_map = pd.read_csv(BOWLING_STYLE_MAP_PATH)
+
+    for df_map in [df_batsman_map, df_bowler_map, df_venue_map, df_batting_hand_map, df_bowling_style_map]:
         df_map['Original_Value'] = df_map['Original_Value'].astype(str)
+
     name_to_encoding['batsman'] = dict(zip(df_batsman_map['Original_Value'], df_batsman_map['Encoded_Value']))
     name_to_encoding['bowler'] = dict(zip(df_bowler_map['Original_Value'], df_bowler_map['Encoded_Value']))
     name_to_encoding['venue'] = dict(zip(df_venue_map['Original_Value'], df_venue_map['Encoded_Value']))
+    
     encoding_to_name = {
         'batsman': dict(zip(df_batsman_map['Encoded_Value'], df_batsman_map['Original_Value'])),
         'bowler': dict(zip(df_bowler_map['Encoded_Value'], df_bowler_map['Original_Value'])),
-        'venue': dict(zip(df_venue_map['Encoded_Value'], df_venue_map['Original_Value']))
+        'venue': dict(zip(df_venue_map['Encoded_Value'], df_venue_map['Original_Value'])),
+        'batting_hand': dict(zip(df_batting_hand_map['Encoded_Value'], df_batting_hand_map['Original_Value'])),
+        'bowling_style': dict(zip(df_bowling_style_map['Encoded_Value'], df_bowling_style_map['Original_Value']))
     }
     logging.info("Successfully loaded all encoding map files.")
 
@@ -58,10 +70,16 @@ try:
     df_main['batsman_name'] = df_main['batsman'].map(encoding_to_name['batsman'])
     df_main['bowler_name'] = df_main['bowler'].map(encoding_to_name['bowler'])
     df_main['venue_name'] = df_main['venue'].map(encoding_to_name['venue'])
+    # ADDED: Decode style columns for stats calculation
+    df_main['batting_hand_str'] = df_main['batting_hand'].map(encoding_to_name['batting_hand'])
+    df_main['bowling_style_str'] = df_main['bowling_style'].map(encoding_to_name['bowling_style'])
     df_main.dropna(subset=['batsman_name', 'bowler_name', 'venue_name'], inplace=True)
     
     # --- Step 3: Build matchup and player data dictionaries ---
     batsman_list = sorted(df_main['batsman_name'].unique().tolist())
+    # ADDED: Create a complete list of all unique players
+    all_players_list = sorted(list(set(batsman_list + df_main['bowler_name'].unique().tolist())))
+    
     grouped = df_main.groupby(['batsman_name', 'bowler_name'])['venue_name'].unique().apply(list).reset_index()
     for record in grouped.to_dict('records'):
         batsman, bowler, venues = record['batsman_name'], record['bowler_name'], record['venue_name']
@@ -123,7 +141,6 @@ def predict_outcomes(batsman_name, bowler_name, venue_name, balls_faced):
         if "total_runs" in models:
             runs_per_ball = models["total_runs"].predict(features)[0]
             predicted_total_runs = runs_per_ball * balls_faced
-            # FIX: Ensure predicted runs cannot be negative
             results["predicted_runs"] = round(float(max(0, predicted_total_runs)))
         
         if "dismissals" in models and isinstance(models["dismissals"], XGBClassifier):
@@ -132,12 +149,10 @@ def predict_outcomes(batsman_name, bowler_name, venue_name, balls_faced):
             
         if "dismissal_rate" in models:
             predicted_rate = models["dismissal_rate"].predict(features)[0]
-            # FIX: Ensure predicted dismissal rate cannot be negative
             results["dismissal_rate"] = round(float(max(0, predicted_rate)), 3)
             
         if "strike_rate" in models:
             predicted_sr = models["strike_rate"].predict(features)[0]
-            # FIX: Ensure predicted strike rate cannot be negative
             results["strike_rate"] = round(float(max(0, predicted_sr)), 2)
             
         return results
@@ -158,6 +173,12 @@ def index():
 def analysis():
     """Renders the analysis page where users can make predictions."""
     return render_template("analysis.html", batsman_list=batsman_list)
+
+# ADDED: New route for the player profiles page
+@app.route("/profiles")
+def profiles():
+    """Renders the player profile and comparison page."""
+    return render_template("profiles.html", all_players_list=all_players_list)
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -193,7 +214,6 @@ def get_player_card(player_name):
         player_data = cursor.fetchone()
         conn.close()
         if player_data:
-            # Convert the database row to a dictionary to be sent as JSON
             player_dict = dict(player_data)
             logging.info(f"Returning player card data for {player_name}: {player_dict}")
             return jsonify(player_dict)
@@ -203,6 +223,71 @@ def get_player_card(player_name):
     except Exception as e:
         logging.error(f"Database error for player {player_name}: {e}")
         return jsonify({"error": "Database error"}), 500
+
+# ADDED: New API endpoint to calculate and return player stats
+@app.route("/get_player_stats/<player_name>")
+def get_player_stats(player_name):
+    """Calculates and returns overall statistics for a given player."""
+    try:
+        stats = {}
+        
+        # --- Batting Stats ---
+        is_batsman = player_name in df_main['batsman_name'].values
+        if is_batsman:
+            batting_df = df_main[df_main['batsman_name'] == player_name]
+            total_runs = int(batting_df['total_runs'].sum())
+            total_balls_faced = int(batting_df['total_balls'].sum())
+            total_dismissals = int(batting_df['dismissals'].sum())
+            
+            batting_stats = {
+                "total_runs": total_runs,
+                "total_balls_faced": total_balls_faced,
+                "total_dismissals": total_dismissals,
+                "strike_rate": round((total_runs / total_balls_faced) * 100, 2) if total_balls_faced > 0 else 0,
+                "average": round(total_runs / total_dismissals, 2) if total_dismissals > 0 else total_runs
+            }
+            stats['batting'] = batting_stats
+            
+            # Performance vs Bowling Type
+            perf_vs_bowling = batting_df.groupby('bowling_style_str').agg(
+                runs=('total_runs', 'sum'),
+                balls=('total_balls', 'sum')
+            ).reset_index()
+            perf_vs_bowling['strike_rate'] = round((perf_vs_bowling['runs'] / perf_vs_bowling['balls']) * 100, 2)
+            stats['batting']['perf_vs_bowling_style'] = perf_vs_bowling.to_dict('records')
+
+        # --- Bowling Stats ---
+        is_bowler = player_name in df_main['bowler_name'].values
+        if is_bowler:
+            bowling_df = df_main[df_main['bowler_name'] == player_name]
+            total_runs_conceded = int(bowling_df['total_runs'].sum())
+            total_balls_bowled = int(bowling_df['total_balls'].sum())
+            total_wickets = int(bowling_df['dismissals'].sum())
+            
+            bowling_stats = {
+                "total_runs_conceded": total_runs_conceded,
+                "total_balls_bowled": total_balls_bowled,
+                "total_wickets": total_wickets,
+                "economy_rate": round((total_runs_conceded / total_balls_bowled) * 6, 2) if total_balls_bowled > 0 else 0,
+                "bowling_average": round(total_runs_conceded / total_wickets, 2) if total_wickets > 0 else total_runs_conceded
+            }
+            stats['bowling'] = bowling_stats
+            
+            # Performance vs Batting Hand
+            perf_vs_batting = bowling_df.groupby('batting_hand_str').agg(
+                wickets=('dismissals', 'sum'),
+                runs=('total_runs', 'sum')
+            ).reset_index()
+            stats['bowling']['perf_vs_batting_hand'] = perf_vs_batting.to_dict('records')
+            
+        if not stats:
+            return jsonify({"error": "Player has no stats in this dataset."}), 404
+            
+        return jsonify(stats)
+
+    except Exception as e:
+        logging.error(f"Error getting stats for {player_name}: {e}")
+        return jsonify({"error": "Could not calculate player stats."}), 500
 
 @app.route("/get_bowlers/<batsman_name>")
 def get_bowlers(batsman_name):
