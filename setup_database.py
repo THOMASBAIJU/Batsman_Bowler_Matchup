@@ -62,7 +62,7 @@ def create_database():
 
         df.dropna(subset=['batsman_name', 'bowler_name'], inplace=True)
 
-        # MODIFIED: Logic to correctly handle all-rounders
+        # Logic to correctly handle all-rounders
         # 1. Get unique data for batsmen and bowlers separately
         batsmen_info = df[['batsman_name', 'batting_hand_str']].drop_duplicates('batsman_name').rename(columns={'batsman_name': 'player_name', 'batting_hand_str': 'batting_hand'})
         bowlers_info = df[['bowler_name', 'bowling_style_str']].drop_duplicates('bowler_name').rename(columns={'bowler_name': 'player_name', 'bowling_style_str': 'bowling_style'})
@@ -81,7 +81,7 @@ def create_database():
             bowling_style = row.get('bowling_style', 'N/A')
             if pd.isna(bowling_style): bowling_style = 'N/A'
 
-            # Determine a primary role for display, though the frontend will handle context
+            # Determine a primary role for display
             role = 'Unknown'
             is_batsman = batting_hand != 'N/A'
             is_bowler = bowling_style != 'N/A'
