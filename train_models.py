@@ -6,30 +6,27 @@ import joblib
 import os
 
 # --- Configuration ---
-DATASET_PATH = r"D:\Batsman_bowler_matchup\data_cleaning\final\final_dataset.csv"
-MODELS_DIR = "models"
+# CORRECTED: Added '../' to go up one directory to find the dataset
+DATASET_PATH = "../final_dataset.csv"
+MODELS_DIR = "../models" # Also correct this path to save models in the main models folder
 
 # --- 1. Load and Prepare the Data ---
 print("🔹 Loading dataset...")
+# Create the models directory if it doesn't exist at the correct location
+os.makedirs(MODELS_DIR, exist_ok=True)
+
 df = pd.read_csv(DATASET_PATH)
 
-# MODIFIED: Feature Engineering for "Per-Ball" Metrics
-print("🔹 Engineering 'per-ball' features for accurate predictions...")
-# To avoid division by zero, replace 0s in 'total_balls' with 1
-df['total_balls'] = df['total_balls'].replace(0, 1)
-df['runs_per_ball'] = df['total_runs'] / df['total_balls']
-
+print("🔹 Preparing data for training...")
 # Ensure 'dismissals' is binary (0 or 1)
 df['dismissals'] = (df['dismissals'] > 0).astype(int)
-print("✅ 'runs_per_ball' created and 'dismissals' converted to binary.")
+print("✅ 'dismissals' converted to binary.")
 
 # --- 2. Define Features and Targets ---
-# The inputs to the model remain the same
 feature_columns = ['batsman', 'bowler', 'total_balls', 'batting_hand', 'bowling_style', 'venue']
 X = df[feature_columns]
 
-# MODIFIED: The targets now include our new 'runs_per_ball' metric
-target_columns = ["runs_per_ball", "dismissals", "strike_rate", "dismissal_rate"]
+target_columns = ["total_runs", "dismissals", "strike_rate", "dismissal_rate"]
 y = df[target_columns]
 
 # --- 3. Split Data ---
@@ -40,10 +37,7 @@ print("🔹 Data split into training and testing sets.")
 for target in target_columns:
     print("-" * 30)
     
-    model_name_suffix = target # 'runs_per_ball' will be part of the filename
-    if target == "runs_per_ball":
-        # Rename the output model to 'total_runs' for consistency with the app
-        model_name_suffix = "total_runs"
+    model_name_suffix = target
 
     if target == "dismissals":
         print(f"☑️  Training XGBClassifier for '{target}'...")
