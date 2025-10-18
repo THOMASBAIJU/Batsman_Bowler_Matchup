@@ -35,7 +35,6 @@
           <li><a href="/" class="active">Home</a></li>
           <li><a href="#about">About</a></li>
           <li><a href="#features">Features</a></li>
-          <!-- NECESSARY CHANGE: Added link to the new Profiles page -->
           <li><a href="/profiles">Profiles</a></li>
           <li><a href="/analysis">Predict</a></li>
         </ul>
@@ -63,13 +62,64 @@
             <h2>Features</h2><p>The project analyzes batsman–bowler matchups using player stats, balls faced, and venue conditions to predict outcomes like runs, strike rate, and dismissal rate through an interactive UI.</p></div>
             <div class="container"><div class="d-flex justify-content-center"><ul class="nav nav-tabs" data-aos="fade-up" data-aos-delay="100">
                 <li class="nav-item"><a class="nav-link active show" data-bs-toggle="tab" data-bs-target="#features-tab-1"><h4>Key Feature</h4></a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-2">
-                    <h4>XGBoost</h4></a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-3"><h4>Random Forest</h4></a></li></ul></div><div class="tab-content" data-aos="fade-up" data-aos-delay="200"><div class="tab-pane fade active show" id="features-tab-1"><div class="row">
-                        <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0 d-flex flex-column justify-content-center"><h3>Key Features</h3><ul><li><i class="bi bi-check2-all"></i> <span>Uses XGBoost and Random Forest Regressor to predict outcomes such as expected runs, strike rate, and dismissal rate.</span></li><li><i class="bi bi-check2-all"></i> 
-                            <span>Evaluates matchups between individual batsmen and bowlers based on historical performance data.</span></li><li><i class="bi bi-check2-all"></i> <span>Considers number of balls faced and venue conditions to improve prediction accuracy.</span></li><li><i class="bi bi-check2-all"></i> <span>Allows users to select batsman, bowler, and match conditions to view predictions in real time.</span></li></ul></div>
-                            <div class="col-lg-6 order-1 order-lg-2 text-center"><img src="{{ url_for('static', filename='assets/img/illustration-2.webp') }}" alt="Hero Image" class="img-fluid"></div></div></div></div></div>
+                    <h4>XGBoost</h4></a></li><li class="nav-item"><a class="nav-link" data-bs-toggle="tab" data-bs-target="#features-tab-3"><h4>Random Forest</h4></a></li></ul></div>
+                    
+            <div class="tab-content" data-aos="fade-up" data-aos-delay="200">
+                <div class="tab-pane fade active show" id="features-tab-1">
+                    <div class="row">
+                        <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0 d-flex flex-column justify-content-center">
+                            <h3>Key Features</h3>
+                            <ul>
+                                <li><i class="bi bi-check2-all"></i> <span>Uses XGBoost to predict outcomes such as expected runs, strike rate, and dismissal rate.</span></li>
+                                <li><i class="bi bi-check2-all"></i> <span>Evaluates matchups between individual batsmen and bowlers based on historical performance data.</span></li>
+                                <li><i class="bi bi-check2-all"></i> <span>Considers number of balls faced and venue conditions to improve prediction accuracy.</span></li>
+                                <li><i class="bi bi-check2-all"></i> <span>Allows users to select players and match conditions to view predictions in real time.</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-6 order-1 order-lg-2 text-center">
+                            <img src="{{ url_for('static', filename='assets/img/illustration-2.webp') }}" alt="Features Illustration" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="features-tab-2">
+                    <div class="row">
+                        <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0 d-flex flex-column justify-content-center">
+                            <h3>XGBoost Model</h3>
+                            <p>XGBoost (Extreme Gradient Boosting) is a powerful machine learning algorithm that builds decision trees sequentially, with each new tree correcting the errors of the previous ones. This makes it highly accurate for prediction tasks.</p>
+                            <ul>
+                                <li><i class="bi bi-check2-all"></i> <span>High predictive accuracy due to its gradient boosting framework.</span></li>
+                                <li><i class="bi bi-check2-all"></i> <span>Optimized for fast performance, making it efficient for real-time predictions.</span></li>
+                                <li><i class="bi bi-check2-all"></i> <span>Used in this project to predict runs, strike rate, and dismissal rate.</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-6 order-1 order-lg-2 text-center">
+                            <img src="{{ url_for('static', filename='assets/img/illustration-2.webp') }}" alt="XGBoost Illustration" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="features-tab-3">
+                     <div class="row">
+                        <div class="col-lg-6 order-2 order-lg-1 mt-3 mt-lg-0 d-flex flex-column justify-content-center">
+                            <h3>Random Forest Model</h3>
+                            <p>Random Forest is an algorithm that works by building a multitude of decision trees. For regression, the final prediction is the average of the predictions from all individual trees, which helps reduce overfitting.</p>
+                            <ul>
+                                <li><i class="bi bi-check2-all"></i> <span>Highly effective at preventing overfitting by averaging many diverse trees.</span></li>
+                                <li><i class="bi bi-check2-all"></i> <span>Shows strong performance on a wide range of prediction problems.</span></li>
+                                <li><i class="bi bi-check2-all"></i> <span>Initially used in this project to provide a robust baseline for comparing model performance against XGBoost.</span></li>
+                            </ul>
+                        </div>
+                        <div class="col-lg-6 order-1 order-lg-2 text-center">
+                            <img src="{{ url_for('static', filename='assets/img/illustration-2.webp') }}" alt="Random Forest Illustration" class="img-fluid">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
     </section>
 
-    <!-- This section now serves as a clean call to action -->
     <section id="services" class="services section light-background">
       <div class="container section-title" data-aos="fade-up">
           <h2>Predict Matchup</h2>
@@ -81,8 +131,7 @@
   </main>
 
   <footer id="footer" class="footer">
-      <!-- Your existing footer -->
-  </footer>
+      </footer>
 
   <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
@@ -92,4 +141,3 @@
 
 </body>
 </html>
-

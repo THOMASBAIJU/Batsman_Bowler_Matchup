@@ -18,13 +18,13 @@ logging.basicConfig(level=logging.INFO)
 # Define File Paths
 # ---------------------------------------------------
 DB_FILE = "players.db"
-DATA_PATH = r"D:\Batsman_bowler_matchup\data_cleaning\final\final_dataset.csv"
+# This path should be relative
+DATA_PATH = "final_dataset.csv"
 MAPS_DIR = "maps"
 MODELS_DIR = "models"
 BATSMAN_MAP_PATH = os.path.join(MAPS_DIR, "batsman_encoding_map.csv")
 BOWLER_MAP_PATH = os.path.join(MAPS_DIR, "bowler_encoding_map.csv")
 VENUE_MAP_PATH = os.path.join(MAPS_DIR, "venue_encoding_map.csv")
-# ADDED: Paths for style maps needed for stats page
 BATTING_HAND_MAP_PATH = os.path.join(MAPS_DIR, "batting_hand_encoding_map.csv")
 BOWLING_STYLE_MAP_PATH = os.path.join(MAPS_DIR, "bowling_style_encoding_map.csv")
 
@@ -34,9 +34,9 @@ BOWLING_STYLE_MAP_PATH = os.path.join(MAPS_DIR, "bowling_style_encoding_map.csv"
 # ---------------------------------------------------
 matchups = {}
 batsman_list = []
-all_players_list = [] # ADDED: For the profiles page dropdown
+all_players_list = []
 name_to_encoding = {}
-encoding_to_name = {} # ADDED: Made this global for stats calculation
+encoding_to_name = {}
 batsman_hand_map = {}
 bowler_style_map = {}
 df_main = pd.DataFrame()
@@ -70,14 +70,12 @@ try:
     df_main['batsman_name'] = df_main['batsman'].map(encoding_to_name['batsman'])
     df_main['bowler_name'] = df_main['bowler'].map(encoding_to_name['bowler'])
     df_main['venue_name'] = df_main['venue'].map(encoding_to_name['venue'])
-    # ADDED: Decode style columns for stats calculation
     df_main['batting_hand_str'] = df_main['batting_hand'].map(encoding_to_name['batting_hand'])
     df_main['bowling_style_str'] = df_main['bowling_style'].map(encoding_to_name['bowling_style'])
     df_main.dropna(subset=['batsman_name', 'bowler_name', 'venue_name'], inplace=True)
     
     # --- Step 3: Build matchup and player data dictionaries ---
     batsman_list = sorted(df_main['batsman_name'].unique().tolist())
-    # ADDED: Create a complete list of all unique players
     all_players_list = sorted(list(set(batsman_list + df_main['bowler_name'].unique().tolist())))
     
     grouped = df_main.groupby(['batsman_name', 'bowler_name'])['venue_name'].unique().apply(list).reset_index()
@@ -139,8 +137,9 @@ def predict_outcomes(batsman_name, bowler_name, venue_name, balls_faced):
         results = {}
         
         if "total_runs" in models:
-            runs_per_ball = models["total_runs"].predict(features)[0]
-            predicted_total_runs = runs_per_ball * balls_faced
+            # CORRECTED: The model now predicts total runs directly.
+            predicted_total_runs = models["total_runs"].predict(features)[0]
+            # The multiplication step has been removed.
             results["predicted_runs"] = round(float(max(0, predicted_total_runs)))
         
         if "dismissals" in models and isinstance(models["dismissals"], XGBClassifier):
@@ -174,7 +173,6 @@ def analysis():
     """Renders the analysis page where users can make predictions."""
     return render_template("analysis.html", batsman_list=batsman_list)
 
-# ADDED: New route for the player profiles page
 @app.route("/profiles")
 def profiles():
     """Renders the player profile and comparison page."""
@@ -186,7 +184,7 @@ def predict():
     batsman = request.form.get("batsman")
     bowler = request.form.get("bowler")
     venue = request.form.get("venue")
-    balls_faced_str = request.form.get("balls")
+    balls_faced_str = request.form.get("total_balls")
     
     try:
         balls_faced = int(balls_faced_str) if balls_faced_str and balls_faced_str.isdigit() else 0
@@ -224,7 +222,6 @@ def get_player_card(player_name):
         logging.error(f"Database error for player {player_name}: {e}")
         return jsonify({"error": "Database error"}), 500
 
-# ADDED: New API endpoint to calculate and return player stats
 @app.route("/get_player_stats/<player_name>")
 def get_player_stats(player_name):
     """Calculates and returns overall statistics for a given player."""
@@ -302,4 +299,3 @@ def get_venues(batsman_name, bowler_name):
 # ---------------------------------------------------
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0")
-
