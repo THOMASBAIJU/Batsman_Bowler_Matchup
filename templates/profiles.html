@@ -13,7 +13,6 @@
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/aos/aos.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
     .header { background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -23,7 +22,7 @@
         box-shadow: 0 5px 25px rgba(0,0,0,0.07);
         padding: 25px;
         margin-bottom: 20px;
-        height: 100%; /* FIX: Ensures cards in a flex row have equal height */
+        height: 100%;
     }
     .stat-card h4 {
         font-family: 'Inter', sans-serif;
@@ -43,7 +42,6 @@
     .stat-item .value { font-weight: 700; color: #343a40; }
     #results-area { transition: opacity 0.5s ease-in-out; }
 
-    /* Compact Player Card Design */
     .player-card {
         background: white;
         border-radius: 15px;
@@ -134,7 +132,7 @@
                 </div>
             </div>
             
-            <div id="results-area" class="row align-items-start"></div>
+            <div id="results-area" class="row align-items-stretch g-4"></div>
         </div>
     </section>
   </main>
@@ -146,3 +144,4 @@
 
 </body>
 </html>
+

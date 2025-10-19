@@ -1,130 +1,204 @@
 document.addEventListener('DOMContentLoaded', function() {
-    AOS.init({
-        duration: 1000,
-        easing: 'ease-in-out',
-        once: true,
-        mirror: false
-    });
+    // Initialize animations if AOS is available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            easing: 'ease-in-out',
+            once: true,
+            mirror: false
+        });
+    }
 
     const player1Select = document.getElementById('player1');
     const player2Select = document.getElementById('player2');
     const viewBtn = document.getElementById('viewBtn');
     const resultsArea = document.getElementById('results-area');
 
+    let allPlayersWithRoles = {}; // To store { name: role }
+
+    // --- 1. Fetch all player roles on page load ---
+    async function initializePlayerRoles() {
+        try {
+            const response = await fetch('/get_all_player_roles');
+            if (!response.ok) throw new Error('Failed to load player roles from the server.');
+            allPlayersWithRoles = await response.json();
+            player1Select.disabled = false; // Enable the first dropdown once data is ready
+        } catch (error) {
+            console.error(error);
+            resultsArea.innerHTML = `<div class="col-12"><div class="alert alert-danger">${error.message}</div></div>`;
+        }
+    }
+
+    // --- 2. Filter Player 2 dropdown based on Player 1's role ---
+    player1Select.addEventListener('change', function() {
+        const player1Name = this.value;
+        const player1Role = allPlayersWithRoles[player1Name];
+        
+        player2Select.value = '';
+        
+        if (!player1Name) {
+            player2Select.innerHTML = '<option value="">Choose a player...</option>';
+            player2Select.disabled = true;
+            return;
+        }
+
+        let eligibleRoles;
+        if (player1Role === 'Batsman') {
+            eligibleRoles = ['Batsman', 'All-Rounder'];
+        } else if (player1Role === 'Bowler') {
+            eligibleRoles = ['Bowler', 'All-Rounder'];
+        } else { // All-Rounder
+            eligibleRoles = ['Batsman', 'Bowler', 'All-Rounder'];
+        }
+
+        const filteredPlayers = Object.keys(allPlayersWithRoles).filter(p => eligibleRoles.includes(allPlayersWithRoles[p]));
+
+        let optionsHtml = '<option value="">Choose a player...</option>';
+        filteredPlayers.sort().forEach(player => {
+            if (player !== player1Name) { // Exclude the player already selected
+                optionsHtml += `<option value="${player}">${player}</option>`;
+            }
+        });
+        player2Select.innerHTML = optionsHtml;
+        player2Select.disabled = false;
+    });
+
+    // --- 3. Fetches stats and card data for a player ---
     async function getFullProfileData(playerName) {
+        if (!playerName) return null;
         try {
             const [statsRes, cardRes] = await Promise.all([
                 fetch(`/get_player_stats/${playerName}`),
                 fetch(`/get_player_card/${playerName}`)
             ]);
-
-            if (!statsRes.ok || !cardRes.ok) throw new Error(`Could not load full data for ${playerName}.`);
-            
-            const statsData = await statsRes.json();
-            const cardData = await cardRes.json();
-            statsData.name = playerName;
-
-            return { stats: statsData, card: cardData };
+            if (!statsRes.ok || !cardRes.ok) {
+                const errorData = await (statsRes.ok ? cardRes.json() : statsRes.json());
+                throw new Error(errorData.error || `Could not load data for ${playerName}.`);
+            }
+            const stats = await statsRes.json();
+            const card = await cardRes.json();
+            return { stats, card, name: playerName };
         } catch (error) {
-            console.error("Error creating full profile for", playerName, error);
-            return { error: `<div class="alert alert-warning">${error.message}</div>` };
+            console.error(`Error fetching data for ${playerName}:`, error);
+            return { error: error.message, name: playerName };
         }
     }
     
-    function buildProfileHtml(profileData) {
-        const { stats, card } = profileData;
-        
-        let cardDetailsHtml = '';
-        if (card.batting_hand && card.batting_hand !== 'N/A') cardDetailsHtml += `<p class="player-detail mb-0">${card.batting_hand}</p>`;
-        if (card.bowling_style && card.bowling_style !== 'N/A') cardDetailsHtml += `<p class="player-detail mb-0">${card.bowling_style}</p>`;
+    // --- 4. Builds the HTML for a single player's profile ---
+    function buildProfileContent(profile, showBatting, showBowling) {
+        try {
+            if (!profile) return `<div class="alert alert-warning">Player data could not be loaded.</div>`;
+            const { card, stats, error, name } = profile;
+            if (error) { return `<div class="alert alert-danger">Error for ${name}: ${error}</div>`; }
+            if (!card || !stats) { return `<div class="alert alert-danger">Incomplete data for ${name}.</div>`; }
 
-        const cardHtml = `
-            <div class="player-card" data-aos="fade-up">
-                <img src="${card.profile_image_url}" alt="${card.player_name}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${card.player_name.replace(' ', '+')}&background=0d6efd&color=fff&size=150';">
-                <h5>${card.player_name}</h5>
-                <p class="player-role">${card.role}</p>
-                ${cardDetailsHtml}
-            </div>`;
-        
-        let careerStatsHtml = '', chartsHtml = '';
-        if (stats.batting) {
-            const s = stats.batting;
-            careerStatsHtml += `<div class="stat-card" data-aos="fade-up" data-aos-delay="100"><h4>Batting Career</h4><div class="stat-item"><span class="label">Total Runs</span><span class="value">${s.total_runs}</span></div><div class="stat-item"><span class="label">Total Balls Faced</span><span class="value">${s.total_balls_faced}</span></div><div class="stat-item"><span class="label">Dismissals</span><span class="value">${s.total_dismissals}</span></div><div class="stat-item"><span class="label">Strike Rate</span><span class="value">${s.strike_rate}</span></div><div class="stat-item"><span class="label">Average</span><span class="value">${s.average}</span></div></div>`;
-            chartsHtml += `<div class="col-md-6 d-flex"><div class="stat-card w-100" data-aos="fade-up" data-aos-delay="200"><h4>vs Bowling Style (SR)</h4><canvas id="battingChart-${stats.name.replace(/ /g, '')}"></canvas></div></div>`;
-        }
-        if (stats.bowling) {
-            const s = stats.bowling;
-            careerStatsHtml += `<div class="stat-card" data-aos="fade-up" data-aos-delay="100"><h4>Bowling Career</h4><div class="stat-item"><span class="label">Wickets</span><span class="value">${s.total_wickets}</span></div><div class="stat-item"><span class="label">Runs Conceded</span><span class="value">${s.total_runs_conceded}</span></div><div class="stat-item"><span class="label">Balls Bowled</span><span class="value">${s.total_balls_bowled}</span></div><div class="stat-item"><span class="label">Economy</span><span class="value">${s.economy_rate}</span></div><div class="stat-item"><span class="label">Average</span><span class="value">${s.bowling_average}</span></div></div>`;
-            chartsHtml += `<div class="col-md-6 d-flex"><div class="stat-card w-100" data-aos="fade-up" data-aos-delay="200"><h4>vs Batting Hand (Wickets)</h4><canvas id="bowlingChart-${stats.name.replace(/ /g, '')}"></canvas></div></div>`;
-        }
+            let cardDetailsHtml = '';
+            if (card.batting_hand && card.batting_hand !== 'N/A') cardDetailsHtml += `<p class="player-detail mb-0">${card.batting_hand}</p>`;
+            if (card.bowling_style && card.bowling_style !== 'N/A') cardDetailsHtml += `<p class="player-detail mb-0">${card.bowling_style}</p>`;
 
-        return `
-            <div class="row mb-4 align-items-stretch">
-                <div class="col-md-5 d-flex">${cardHtml}</div>
-                <div class="col-md-7 d-flex flex-column">${careerStatsHtml}</div>
-            </div>
-            <div class="row">${chartsHtml}</div>`;
-    }
+            const cardHtml = `
+                <div class="col-12">
+                    <div class="player-card">
+                        <img src="${card.profile_image_url}" alt="${card.player_name}" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${card.player_name.replace(' ', '+')}&background=0d6efd&color=fff&size=150';">
+                        <h5>${card.player_name}</h5>
+                        <p class="player-role">${card.role}</p>
+                        ${cardDetailsHtml}
+                    </div>
+                </div>`;
 
-    function createCharts(playerData, playerName) {
-        if (playerData.batting && playerData.batting.perf_vs_bowling_style) {
-            const ctx = document.getElementById(`battingChart-${playerName.replace(/ /g, '')}`);
-            if (ctx) new Chart(ctx.getContext('2d'), { type: 'bar', data: { labels: playerData.batting.perf_vs_bowling_style.map(d => d.bowling_style_str), datasets: [{ label: 'Strike Rate', data: playerData.batting.perf_vs_bowling_style.map(d => d.strike_rate), backgroundColor: '#0d6efd' }] }, options: { indexAxis: 'y', responsive: true } });
-        }
-        if (playerData.bowling && playerData.bowling.perf_vs_batting_hand) {
-            const ctx = document.getElementById(`bowlingChart-${playerName.replace(/ /g, '')}`);
-            if (ctx) new Chart(ctx.getContext('2d'), { type: 'bar', data: { labels: playerData.bowling.perf_vs_batting_hand.map(d => d.batting_hand_str), datasets: [{ label: 'Wickets', data: playerData.bowling.perf_vs_batting_hand.map(d => d.wickets), backgroundColor: '#198754' }] }, options: { indexAxis: 'y', responsive: true } });
+            let battingStatsHtml = '';
+            if (showBatting && stats.batting) {
+                const s = stats.batting;
+                battingStatsHtml = `
+                    <div class="col-12 mt-4">
+                        <div class="stat-card">
+                            <h4>Batting Stats</h4>
+                            <div class="stat-item"><span class="label">Total Runs</span><span class="value">${s.total_runs}</span></div>
+                            <div class="stat-item"><span class="label">Balls Faced</span><span class="value">${s.total_balls_faced}</span></div>
+                            <div class="stat-item"><span class="label">Average</span><span class="value">${s.average.toFixed(2)}</span></div>
+                            <div class="stat-item"><span class="label">Strike Rate</span><span class="value">${s.strike_rate.toFixed(2)}</span></div>
+                        </div>
+                    </div>`;
+            }
+
+            let bowlingStatsHtml = '';
+            if (showBowling && stats.bowling) {
+                const s = stats.bowling;
+                bowlingStatsHtml = `
+                    <div class="col-12 mt-4">
+                        <div class="stat-card">
+                            <h4>Bowling Stats</h4>
+                            <div class="stat-item"><span class="label">Wickets</span><span class="value">${s.total_wickets}</span></div>
+                            <div class="stat-item"><span class="label">Runs Conceded</span><span class="value">${s.total_runs_conceded}</span></div>
+                            <div class="stat-item"><span class="label">Average</span><span class="value">${s.bowling_average.toFixed(2)}</span></div>
+                            <div class="stat-item"><span class="label">Economy</span><span class="value">${s.economy_rate.toFixed(2)}</span></div>
+                        </div>
+                    </div>`;
+            }
+            
+            // ✅ LAYOUT FIX: Always return a vertical stack.
+            return cardHtml + battingStatsHtml + bowlingStatsHtml;
+
+        } catch(e) { 
+            console.error("Error building profile HTML:", e);
+            return `<div class="col-12"><div class="alert alert-danger">An error occurred while displaying the profile.</div></div>`;
         }
     }
     
+    // --- 5. Main event listener for the "View Stats" button ---
     viewBtn.addEventListener('click', async function() {
         const player1Name = player1Select.value;
         const player2Name = player2Select.value;
-        resultsArea.innerHTML = '';
-        
-        if (!player1Name && !player2Name) return;
 
-        // ✅ NECESSARY CHANGE: Disable button and show loading states
+        if (!player1Name && !player2Name) {
+            resultsArea.innerHTML = `<div class="col-12"><div class="alert alert-info">Please select at least one player.</div></div>`;
+            return;
+        }
+
         viewBtn.disabled = true;
-        viewBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...`;
-        resultsArea.innerHTML = `<div class="col-12 text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>`;
+        viewBtn.innerHTML = `<span class="spinner-border spinner-border-sm"></span> Loading...`;
+        resultsArea.innerHTML = `<div class="col-12 text-center p-5"><div class="spinner-border text-primary"></div></div>`;
 
         try {
-            if (player1Name && player2Name) {
-                resultsArea.innerHTML = `<div class="col-lg-6" id="player1-col"></div><div class="col-lg-6" id="player2-col"></div>`;
+            let showBatting = true;
+            let showBowling = true;
 
-                const [p1Profile, p2Profile] = await Promise.all([
-                    getFullProfileData(player1Name),
-                    getFullProfileData(player2Name)
-                ]);
+            if (player1Name && player2Name && player1Name !== player2Name) { 
+                const p1Role = allPlayersWithRoles[player1Name];
+                const p2Role = allPlayersWithRoles[player2Name];
                 
-                document.getElementById('player1-col').innerHTML = p1Profile.error || buildProfileHtml(p1Profile);
-                document.getElementById('player2-col').innerHTML = p2Profile.error || buildProfileHtml(p2Profile);
+                if (p1Role === 'All-Rounder' && p2Role === 'All-Rounder') {
+                    showBatting = true;
+                    showBowling = true;
+                } else if ((p1Role === 'Batsman' && p2Role === 'All-Rounder') || (p2Role === 'Batsman' && p1Role === 'All-Rounder') || (p1Role === 'Batsman' && p2Role === 'Batsman')) {
+                    showBowling = false;
+                } else if ((p1Role === 'Bowler' && p2Role === 'All-Rounder') || (p2Role === 'Bowler' && p1Role === 'All-Rounder') || (p1Role === 'Bowler' && p2Role === 'Bowler')) {
+                    showBatting = false;
+                }
+            }
 
-                setTimeout(() => {
-                    if (!p1Profile.error) createCharts(p1Profile.stats, player1Name);
-                    if (!p2Profile.error) createCharts(p2Profile.stats, player2Name);
-                }, 100);
-
+            if (player1Name && player2Name && player1Name !== player2Name) {
+                const [p1Profile, p2Profile] = await Promise.all([getFullProfileData(player1Name), getFullProfileData(player2Name)]);
+                resultsArea.innerHTML = `
+                    <div class="col-lg-6" data-aos="fade-up"><div class="row g-4">${buildProfileContent(p1Profile, showBatting, showBowling)}</div></div>
+                    <div class="col-lg-6" data-aos="fade-up" data-aos-delay="100"><div class="row g-4">${buildProfileContent(p2Profile, showBatting, showBowling)}</div></div>`;
             } else {
                 const playerName = player1Name || player2Name;
                 const profile = await getFullProfileData(playerName);
-                
-                if (profile.error) {
-                    resultsArea.innerHTML = profile.error;
-                } else {
-                    resultsArea.innerHTML = `<div class="col-12">${buildProfileHtml(profile)}</div>`;
-                    setTimeout(() => createCharts(profile.stats, playerName), 100);
-                }
+                // For a single player, always show all available stats.
+                resultsArea.innerHTML = `<div class="col-lg-8 mx-auto" data-aos="fade-up"><div class="row g-4">${buildProfileContent(profile, true, true)}</div></div>`;
             }
+        } catch (e) {
+            console.error("A critical error occurred:", e);
+            resultsArea.innerHTML = `<div class="col-12"><div class="alert alert-danger">An unexpected error occurred.</div></div>`;
         } finally {
-            // ✅ NECESSARY CHANGE: Re-enable button and restore its text
             viewBtn.disabled = false;
-            viewBtn.innerHTML = 'View';
-
-            setTimeout(() => {
-                if (typeof AOS !== 'undefined') AOS.refresh();
-            }, 50);
+            viewBtn.innerHTML = 'View Stats';
+            if (typeof AOS !== 'undefined') setTimeout(() => AOS.refresh(), 50);
         }
     });
+    
+    // --- 6. Initial call to load the player roles ---
+    initializePlayerRoles();
 });
+

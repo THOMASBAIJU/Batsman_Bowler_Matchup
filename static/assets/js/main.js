@@ -61,6 +61,16 @@
   });
 
   /**
+   * Preloader
+   */
+  const preloader = document.querySelector('#preloader');
+  if (preloader) {
+    window.addEventListener('load', () => {
+      preloader.remove();
+    });
+  }
+
+  /**
    * Scroll top button
    */
   let scrollTop = document.querySelector('.scroll-top');
@@ -70,13 +80,16 @@
       window.scrollY > 100 ? scrollTop.classList.add('active') : scrollTop.classList.remove('active');
     }
   }
-  scrollTop.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.scrollTo({
-      top: 0,
-      behavior: 'smooth'
+  if (scrollTop) {
+    scrollTop.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     });
-  });
+  }
+
 
   window.addEventListener('load', toggleScrollTop);
   document.addEventListener('scroll', toggleScrollTop);
@@ -84,46 +97,22 @@
   /**
    * Animation on scroll function and init
    */
-  function aosInit() {
+  function aos_init() {
     AOS.init({
-      duration: 600,
+      duration: 1000,
       easing: 'ease-in-out',
       once: true,
       mirror: false
     });
   }
-  window.addEventListener('load', aosInit);
-
-  /**
-   * Initiate glightbox
-   */
-  const glightbox = GLightbox({
-    selector: '.glightbox'
+  window.addEventListener('load', () => {
+    aos_init();
   });
 
   /**
-   * Init swiper sliders
+   * ✅ FIX: The GLightbox, Swiper, and PureCounter initialization code that was 
+   * causing the error has been removed as these libraries are not used on the analysis page.
    */
-  function initSwiper() {
-    document.querySelectorAll(".init-swiper").forEach(function(swiperElement) {
-      let config = JSON.parse(
-        swiperElement.querySelector(".swiper-config").innerHTML.trim()
-      );
-
-      if (swiperElement.classList.contains("swiper-tab")) {
-        initSwiperWithCustomPagination(swiperElement, config);
-      } else {
-        new Swiper(swiperElement, config);
-      }
-    });
-  }
-
-  window.addEventListener("load", initSwiper);
-
-  /**
-   * Initiate Pure Counter
-   */
-  new PureCounter();
 
   /**
    * Frequently Asked Questions Toggle
@@ -175,3 +164,4 @@
   document.addEventListener('scroll', navmenuScrollspy);
 
 })();
+

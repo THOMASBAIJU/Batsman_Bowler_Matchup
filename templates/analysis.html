@@ -148,34 +148,58 @@
         <div class="container" data-aos="fade-up" data-aos-delay="100">
             <div id="alert-container"></div>
             
-            <form id="predict-form" class="row g-3 align-items-end bg-white p-4 rounded-4 shadow-sm">
-                <div class="col-lg-3">
-                    <label for="batsman" class="form-label fw-bold">Select Batsman</label>
-                    <select class="form-select" id="batsman" name="batsman" required>
-                        <option value="" disabled selected>Choose a batsman...</option>
-                        {% for b in batsman_list %}
-                        <option value="{{ b }}">{{ b }}</option>
-                        {% endfor %}
-                    </select>
+            <!-- ✅ NECESSARY CHANGE: Restructured form for new model selectors -->
+            <form id="predict-form" class="bg-white p-4 rounded-4 shadow-sm">
+                <!-- Row 1 for Player Selection -->
+                <div class="row g-3">
+                    <div class="col-lg-6">
+                        <label for="batsman" class="form-label fw-bold">Select Batsman</label>
+                        <select class="form-select" id="batsman" name="batsman" required>
+                            <option value="" disabled selected>Choose a batsman...</option>
+                            {% for b in batsman_list %}
+                            <option value="{{ b }}">{{ b }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-6">
+                        <label for="bowler" class="form-label fw-bold">Select Bowler</label>
+                        <select class="form-select" id="bowler" name="bowler" required disabled>
+                            <option value="" selected>Select batsman first...</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-lg-3">
-                    <label for="bowler" class="form-label fw-bold">Select Bowler</label>
-                    <select class="form-select" id="bowler" name="bowler" required disabled>
-                        <option value="" selected>Select batsman first...</option>
-                    </select>
+
+                <!-- Row 2 for Scenario and Model Selection -->
+                <div class="row g-3 mt-2">
+                    <div class="col-lg-4">
+                        <label for="venue" class="form-label fw-bold">Select Venue</label>
+                        <select class="form-select" id="venue" name="venue" required disabled>
+                            <option value="" selected>Select bowler first...</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-2">
+                        <label for="ballsFaced" class="form-label fw-bold">Balls Faced</label>
+                        <input type="number" class="form-control" id="ballsFaced" name="total_balls"  min="1" required>
+                    </div>
+                    <div class="col-lg-3">
+                        <label for="runsModelSelect" class="form-label fw-bold">Batsman Model</label>
+                        <select class="form-select" id="runsModelSelect">
+                            <option value="xgb" selected>XGBoost</option>
+                            <option value="rf">Random Forest</option>
+                        </select>
+                    </div>
+                    <div class="col-lg-3">
+                        <label for="dismissalsModelSelect" class="form-label fw-bold">Bowler Model</label>
+                        <select class="form-select" id="dismissalsModelSelect">
+                            <option value="xgb" selected>XGBoost</option>
+                            <option value="rf">Random Forest</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="col-lg-3">
-                    <label for="venue" class="form-label fw-bold">Select Venue</label>
-                    <select class="form-select" id="venue" name="venue" required disabled>
-                        <option value="" selected>Select bowler first...</option>
-                    </select>
-                </div>
-                <div class="col-lg-2">
-                    <label for="ballsFaced" class="form-label fw-bold">Balls Faced</label>
-                    <input type="number" class="form-control" id="ballsFaced" name="total_balls" min="1" required>
-                </div>
-                <div class="col-lg-1 d-grid">
-                    <button id="predictBtn" class="btn btn-primary" type="submit" disabled>Predict</button>
+
+                <!-- Row for the button -->
+                <div class="text-center mt-4">
+                    <button type="submit" id="predictBtn" class="btn btn-primary btn-lg px-5">Predict</button>
                 </div>
             </form>
             
@@ -251,3 +275,4 @@
     <script src="{{ url_for('static', filename='assets/js/analysis.js') }}"></script>
 </body>
 </html>
+
