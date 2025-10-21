@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const predictForm = document.getElementById('predict-form');
     const predictionContainer = document.getElementById('prediction-container');
     const alertContainer = document.getElementById('alert-container');
+    
+    // ✅ NECESSARY CHANGE: Store the button's original HTML content
+    const originalBtnHTML = predictBtn.innerHTML;
 
     const gaugeCharts = { runs: null, strikeRate: null, dismissalRate: null };
 
@@ -90,7 +93,6 @@ document.addEventListener('DOMContentLoaded', function() {
     batsmanSelect.addEventListener('change', async function() {
         if (!this.value) return;
         
-        // ✅ NECESSARY CHANGE: Provide immediate loading feedback
         populateSelect(bowlerSelect, [], 'Loading bowlers...');
         populateSelect(venueSelect, [], 'Select bowler first...');
         bowlerSelect.disabled = true;
@@ -99,7 +101,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const response = await fetch(`/get_bowlers/${this.value}`);
         const bowlers = await response.json();
         
-        // This line replaces the "Loading..." text with the fetched data
         populateSelect(bowlerSelect, bowlers, 'Choose a bowler...');
         checkFormValidity();
     });
@@ -107,14 +108,12 @@ document.addEventListener('DOMContentLoaded', function() {
     bowlerSelect.addEventListener('change', async function() {
         if (!this.value || !batsmanSelect.value) return;
 
-        // ✅ NECESSARY CHANGE: Provide immediate loading feedback
         populateSelect(venueSelect, [], 'Loading venues...');
         venueSelect.disabled = true;
 
         const response = await fetch(`/get_venues/${batsmanSelect.value}/${this.value}`);
         const venues = await response.json();
 
-        // This line replaces the "Loading..." text with the fetched data
         populateSelect(venueSelect, venues, 'Choose a venue...');
         checkFormValidity();
     });
@@ -126,7 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         event.preventDefault();
         alertContainer.innerHTML = '';
         predictBtn.disabled = true;
-        predictBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+        predictBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...`;
 
         try {
             const formData = new FormData(predictForm);
@@ -137,7 +136,8 @@ document.addEventListener('DOMContentLoaded', function() {
             predictionContainer.style.display = 'block';
             setTimeout(() => {
                 predictionContainer.style.opacity = 1;
-                predictionContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                // ✅ NECESSARY CHANGE: Scroll results to the top of the screen
+                predictionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 10);
 
             // Update Gauges and Labels
@@ -163,7 +163,8 @@ document.addEventListener('DOMContentLoaded', function() {
             showAlert(error.message);
         } finally {
             predictBtn.disabled = false;
-            predictBtn.textContent = 'Predict';
+            // ✅ NECESSARY CHANGE: Restore the button's original HTML
+            predictBtn.innerHTML = originalBtnHTML;
         }
     });
 
@@ -173,4 +174,6 @@ document.addEventListener('DOMContentLoaded', function() {
             behavior: 'smooth'
         });
     });
+
+    checkFormValidity();
 });

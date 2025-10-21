@@ -22,12 +22,10 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    /* FIX: Removed the box-shadow to eliminate the border under the header */
     .header {
         background-color: white;
     }
       
-    /* Redesigned Player Card Styles */
     .player-card {
         background-color: #f8f9fa;
         border-radius: 20px;
@@ -79,7 +77,6 @@
         margin-top: 5px;
     }
 
-    /* Styles for Gauge Cards */
     .gauge-card {
         background: white;
         border-radius: 15px;
@@ -148,61 +145,51 @@
         <div class="container" data-aos="fade-up" data-aos-delay="100">
             <div id="alert-container"></div>
             
-            <!-- ✅ NECESSARY CHANGE: Restructured form for new model selectors -->
-            <form id="predict-form" class="bg-white p-4 rounded-4 shadow-sm">
-                <!-- Row 1 for Player Selection -->
-                <div class="row g-3">
-                    <div class="col-lg-6">
-                        <label for="batsman" class="form-label fw-bold">Select Batsman</label>
-                        <select class="form-select" id="batsman" name="batsman" required>
-                            <option value="" disabled selected>Choose a batsman...</option>
-                            {% for b in batsman_list %}
-                            <option value="{{ b }}">{{ b }}</option>
-                            {% endfor %}
-                        </select>
+            <div class="card border-0 shadow-lg rounded-4">
+              <div class="card-body p-4 p-md-5">
+                <h4 class="card-title text-center mb-4 fw-bold">Create Matchup</h4>
+                <form id="predict-form">
+                  <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                      <label for="batsman" class="form-label fw-bold">🏏 Select Batsman</label>
+                      <select class="form-select form-select-lg" id="batsman" name="batsman" required>
+                        <option value="" disabled selected>Choose a batsman...</option>
+                        {% for b in batsman_list %}
+                        <option value="{{ b }}">{{ b }}</option>
+                        {% endfor %}
+                      </select>
                     </div>
-                    <div class="col-lg-6">
-                        <label for="bowler" class="form-label fw-bold">Select Bowler</label>
-                        <select class="form-select" id="bowler" name="bowler" required disabled>
-                            <option value="" selected>Select batsman first...</option>
-                        </select>
+                    <div class="col-md-6">
+                      <label for="bowler" class="form-label fw-bold">⚾ Select Bowler</label>
+                      <select class="form-select form-select-lg" id="bowler" name="bowler" required disabled>
+                        <option value="" selected>Select batsman first...</option>
+                      </select>
                     </div>
-                </div>
-
-                <!-- Row 2 for Scenario and Model Selection -->
-                <div class="row g-3 mt-2">
-                    <div class="col-lg-4">
-                        <label for="venue" class="form-label fw-bold">Select Venue</label>
-                        <select class="form-select" id="venue" name="venue" required disabled>
-                            <option value="" selected>Select bowler first...</option>
-                        </select>
+                  </div>
+    
+                  <div class="row g-4">
+                    <div class="col-md-6">
+                      <label for="venue" class="form-label fw-bold">🏟️ Select Venue</label>
+                      <select class="form-select form-select-lg" id="venue" name="venue" required disabled>
+                        <option value="" selected>Select bowler first...</option>
+                      </select>
                     </div>
-                    <div class="col-lg-2">
-                        <label for="ballsFaced" class="form-label fw-bold">Balls Faced</label>
-                        <input type="number" class="form-control" id="ballsFaced" name="total_balls"  min="1" required>
+                    <div class="col-md-6">
+                      <label for="ballsFaced" class="form-label fw-bold">🔢 Balls Faced</label>
+                      <input type="number" class="form-control form-control-lg" id="ballsFaced" name="total_balls" min="1" placeholder="e.g., 30" required>
                     </div>
-                    <div class="col-lg-3">
-                        <label for="runsModelSelect" class="form-label fw-bold">Batsman Model</label>
-                        <select class="form-select" id="runsModelSelect">
-                            <option value="xgb" selected>XGBoost</option>
-                            <option value="rf">Random Forest</option>
-                        </select>
+                  </div>
+    
+                  <div class="row mt-4 pt-2">
+                    <div class="col-12 d-grid">
+                      <button type="submit" id="predictBtn" class="btn btn-primary btn-lg fw-bold">
+                        <i class="bi bi-graph-up-arrow me-2"></i>Generate Prediction
+                      </button>
                     </div>
-                    <div class="col-lg-3">
-                        <label for="dismissalsModelSelect" class="form-label fw-bold">Bowler Model</label>
-                        <select class="form-select" id="dismissalsModelSelect">
-                            <option value="xgb" selected>XGBoost</option>
-                            <option value="rf">Random Forest</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Row for the button -->
-                <div class="text-center mt-4">
-                    <button type="submit" id="predictBtn" class="btn btn-primary btn-lg px-5">Predict</button>
-                </div>
-            </form>
-            
+                  </div>
+                </form>
+              </div>
+            </div>
             <div id="prediction-container" class="container mt-5">
                 <div class="row g-4 align-items-stretch">
                     
@@ -275,4 +262,3 @@
     <script src="{{ url_for('static', filename='assets/js/analysis.js') }}"></script>
 </body>
 </html>
-

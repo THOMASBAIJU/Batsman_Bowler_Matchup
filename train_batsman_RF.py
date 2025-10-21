@@ -6,7 +6,7 @@ import joblib
 import os
 
 # --- Configuration ---
-DATASET_PATH = "../final_dataset.csv"
+DATASET_PATH = "final_dataset.csv"
 MODELS_DIR = "../models"
 MODEL_FILENAME = os.path.join(MODELS_DIR, "rf_model_total_runs.joblib")
 
