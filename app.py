@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 # Define File Paths
 # ---------------------------------------------------
 DB_FILE = "players.db"
-DATA_PATH = "final_dataset.csv"
+DATA_PATH = "training/final_dataset.csv"
 MAPS_DIR = "maps"
 MODELS_DIR = "models"
 BATSMAN_MAP_PATH = os.path.join(MAPS_DIR, "batsman_encoding_map.csv")
