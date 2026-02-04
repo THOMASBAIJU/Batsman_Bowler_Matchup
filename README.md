@@ -1,10 +1,7 @@
-# 🏏 IPL Matchup Intel - Next-Gen Analytics
-
-![Supernova UI](https://via.placeholder.com/800x400?text=Supernova+UI+Preview)
+# 🏏 Batsman Bowler Matchup Analysis
 
 A high-performance **Sports Analytics Platform** powered by Machine Learning (XGBoost/RandomForest) to predict the outcome of batsman-bowler face-offs in the Indian Premier League (IPL).
 
-This project features the **"Supernova" Premium UI**, a futuristic aesthetic with neon accents, prismatic glassmorphism, and dynamic animations.
 
 ---
 
@@ -17,16 +14,10 @@ This project features the **"Supernova" Premium UI**, a futuristic aesthetic wit
     - **Dismissal Chance**: Probability of getting out involved.
     - **Next-Ball Outcome**: Probabilistic breakdown of the very next delivery (Dot, 1, 4, 6, Wicket).
 
-### ✨ "Supernova" Experience
-- **Void Black Theme**: Deep space background with animated mesh gradients.
-- **Venue Intelligence**: Dynamic insight badges that detect stadium characteristics (e.g., "Batting Paradise" at Wankhede).
-- **The Verdict**: Instant logic-based interpretation of the stats (e.g., "High Volatility", "Bowler Dominates").
-- **Prismatic Glass**: Advanced translucent cards with gradient borders and neon glows.
-
-### 📊 Visualization
-- **Gauge Cluster**: Interactive half-doughnut charts for Runs, SR, and Risk.
-- **Comparison Cards**: Side-by-side holographic cards for players.
-- **Outcome Bars**: Vertical tactical bars showing ball-by-ball probabilities.
+### 🏟️ Venue & Insights
+- **Venue Intelligence**: Smart system that adjusts context based on stadium stats (e.g., Wankhede = High Scoring).
+- **The Verdict**: Logic-based badge that interprets the stats to declare a winner (e.g., "Bowler Dominates").
+- **Visual Analytics**: Interactive gauges and ball-by-ball probability bars.
 
 ---
 
@@ -35,7 +26,7 @@ This project features the **"Supernova" Premium UI**, a futuristic aesthetic wit
 - **Backend**: Python (Flask), SQLite
 - **ML Core**: XGBoost, Scikit-Learn, Pandas
 - **Frontend**: HTML5, Vanilla CSS3 (Variables, Grid, Flexbox), JavaScript (ES6+), Chart.js
-- **Design System**: "Supernova" (Custom CSS + Bootstrap 5)
+- **Design System**: Custom CSS + Bootstrap 5
 
 ---
 
@@ -89,4 +80,3 @@ The system uses a **Voting Ensemble** (XGBoost + Random Forest) for run predicti
 
 ---
 
-* Crafted with 💙 and ⚡ Neon Energy.*
