@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import r2_score
+from sklearn.metrics import r2_score,mean_absolute_error,mean_squared_error,root_mean_squared_error;
 import joblib
 import os
 
@@ -46,6 +46,9 @@ def train_batsman_model_rf():
     # --- 5. Evaluate and Save the Model ---
     preds = model.predict(X_test)
     print(f"   - Evaluation (R² Score): {r2_score(y_test, preds):.2f}")
+    print(f"   - Evaluation (MAE): {mean_absolute_error(y_test, preds):.2f}")
+    print(f"   - Evaluation (MSE): {mean_squared_error(y_test, preds):.2f}")
+    print(f"   - Evaluation (RMSE): {root_mean_squared_error(y_test, preds):.2f}")
 
     joblib.dump(model, MODEL_FILENAME)
     print(f" Model saved successfully to '{MODEL_FILENAME}'")

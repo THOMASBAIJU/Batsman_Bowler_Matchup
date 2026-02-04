@@ -9,9 +9,10 @@
   <link href="{{ url_for('static', filename='assets/img/favicon.png') }}" rel="icon">
   <link href="{{ url_for('static', filename='assets/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
 
-  <link href="https://fonts.googleapis.com" rel="preconnect">
-  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Space Grotesk & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
 
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
@@ -22,24 +23,48 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    .header {
-        background-color: white;
-    }
+    /* Header styling handled by main.css */
       
     .player-card {
-        background-color: #f8f9fa;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        
+        /* Gradient Border Trick */
+        position: relative;
         border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
         padding: 0;
         text-align: center;
         height: 100%;
-        position: relative;
-        overflow: hidden;  
-        transition: transform 0.3s ease;
+        overflow: hidden;
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+        border: 1px solid rgba(255,255,255,0.05);
     }
+    
+    /* Top Border Highlight */
+    .player-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.1));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+    
     .player-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 50px -10px rgba(0, 240, 255, 0.2);
     }
+    
+    .player-card:hover::before {
+        background: linear-gradient(135deg, var(--accent-color), transparent 60%);
+    }  
     .player-card img {
         width: 100%;
         height: 280px; 
@@ -52,35 +77,40 @@
     .player-info {
         position: relative;
         padding: 20px;
-        background: white;
+        background: var(--glass-bg); /* varying glass opacity if needed, or white for contrast */
         margin-top: -40px; 
         border-top-left-radius: 40px; 
         border-top-right-radius: 40px;
         text-align: center;
+        backdrop-filter: blur(10px);
     }
     .player-card h5 {
         font-size: 1.6rem;
         font-weight: 700;
         margin-bottom: 5px;
         font-family: 'Inter', sans-serif;
+        color: var(--heading-color);
     }
     .player-card .player-role {
         font-weight: 700;
-        color: #0d6efd;
+        color: var(--accent-color);
         text-transform: uppercase;
         font-size: 0.8rem;
         letter-spacing: 1px;
     }
     .player-card .player-detail {
         font-size: 1rem;
-        color: #6c757d;
+        color: var(--default-color);
         margin-top: 5px;
     }
 
     .gauge-card {
-        background: white;
+        background: var(--glass-bg);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid var(--glass-border);
         border-radius: 15px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
+        box-shadow: var(--glass-shadow);
         padding: 20px;
         text-align: center;
         height: 100%;
@@ -101,12 +131,12 @@
         transform: translate(-50%, -50%);
         font-size: 2.25rem;
         font-weight: 700;
-        color: #333;
+        color: var(--heading-color);
         font-family: 'Inter', sans-serif;
     }
     .stat-label {
         font-size: 1rem;
-        color: #6c757d;
+        color: var(--default-color);
         margin-top: 15px;
         font-weight: 500;
     }
@@ -114,6 +144,7 @@
         font-size: 2.75rem;
         font-weight: 700;
         line-height: 1.2;
+        color: var(--heading-color);
     }
     #prediction-container {
         opacity: 0;
@@ -145,52 +176,113 @@
         <div class="container" data-aos="fade-up" data-aos-delay="100">
             <div id="alert-container"></div>
             
-            <div class="card border-0 shadow-lg rounded-4">
-              <div class="card-body p-4 p-md-5">
-                <h4 class="card-title text-center mb-4 fw-bold">Create Matchup</h4>
-                <form id="predict-form">
-                  <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                      <label for="batsman" class="form-label fw-bold"> Select Batsman</label>
-                      <select class="form-select form-select-lg" id="batsman" name="batsman" required>
-                        <option value="" disabled selected>Choose a batsman...</option>
-                        {% for b in batsman_list %}
-                        <option value="{{ b }}">{{ b }}</option>
-                        {% endfor %}
-                      </select>
+                <!-- MATCHUP ENGINE -->
+                <div class="row mb-5 align-items-center">
+                    <div class="col-12 text-center">
+                        <h2 class="section-title mb-0" data-aos="fade-up"><span class="text-primary">Tactical</span> Control Center</h2>
                     </div>
-                    <div class="col-md-6">
-                      <label for="bowler" class="form-label fw-bold"> Select Bowler</label>
-                      <select class="form-select form-select-lg" id="bowler" name="bowler" required disabled>
-                        <option value="" selected>Select batsman first...</option>
-                      </select>
+                </div>
+
+                <div id="predict-form-container" class="mb-5">
+                    <form id="predict-form">
+                    <div class="row align-items-center g-4">
+                        
+                        <!-- BATSMAN CARD (Left) -->
+                        <div class="col-md-5">
+                            <div class="glass-panel p-4 h-100 position-relative border-primary-hover transition-all">
+                                <div class="text-center mb-3">
+                                    <div class="icon-circle bg-primary bg-opacity-25 text-primary mb-2 mx-auto" style="width:50px; height:50px; display:flex; align-items:center; justify-content:center; border-radius:50%;">
+                                        <i class="bi bi-person-rolodex fs-4"></i>
+                                    </div>
+                                    <h4 class="fw-bold text-light">The Striker</h4>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="batsman" class="text-light fw-bold text-uppercase small mb-2">Select Batsman</label>
+                                    <select class="form-select bg-dark text-white border-secondary focus-glow-primary" id="batsman" name="batsman" required style="height: 50px;">
+                                        <option value="" disabled selected>Choose player...</option>
+                                        {% for b in batsman_list %}
+                                        <option value="{{ b }}">{{ b }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- VS BADGE (Center) -->
+                        <div class="col-md-2 text-center">
+                            <div class="position-relative d-inline-block">
+                                <h1 class="display-4 fw-black fst-italic text-uppercase mb-0" 
+                                    style="color: transparent; -webkit-text-stroke: 2px var(--accent-color); text-shadow: 0 0 20px var(--accent-color);">
+                                    VS
+                                </h1>
+                            </div>
+                        </div>
+
+                        <!-- BOWLER CARD (Right) -->
+                        <div class="col-md-5">
+                             <div class="glass-panel p-4 h-100 position-relative border-success-hover transition-all">
+                                <div class="text-center mb-3">
+                                    <div class="icon-circle bg-success bg-opacity-25 text-success mb-2 mx-auto" style="width:50px; height:50px; display:flex; align-items:center; justify-content:center; border-radius:50%;">
+                                        <i class="bi bi-record-circle fs-4"></i>
+                                    </div>
+                                    <h4 class="fw-bold text-light">The Bowler</h4>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="bowler" class="text-light fw-bold text-uppercase small mb-2">Select Bowler</label>
+                                    <select class="form-select bg-dark text-white border-secondary focus-glow-success" id="bowler" name="bowler" required disabled style="height: 50px;">
+                                        <option value="" selected>Waiting for Batsman...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-                  </div>
-    
-                  <div class="row g-4">
-                    <div class="col-md-6">
-                      <label for="venue" class="form-label fw-bold"> Select Venue</label>
-                      <select class="form-select form-select-lg" id="venue" name="venue" required disabled>
-                        <option value="" selected>Select bowler first...</option>
-                      </select>
+
+                    <!-- CONDITIONS PANEL (Bottom) -->
+                    <div class="glass-panel p-4 mt-4">
+                        <div class="row g-4 align-items-end">
+                            <div class="col-md-6">
+                                <label class="text-light text-uppercase small fw-bold mb-2">Match Venue</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-primary"><i class="bi bi-geo-alt-fill"></i></span>
+                                    <select class="form-select form-select-lg bg-dark text-white border-secondary" id="venue" name="venue" required disabled>
+                                         <option value="" selected>Select Venue...</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-light text-uppercase small fw-bold mb-2">Simulation Depth</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-dark border-secondary text-warning"><i class="bi bi-collection-play-fill"></i></span>
+                                    <input type="number" class="form-control form-control-lg bg-dark text-white border-secondary" id="ballsFaced" name="total_balls" min="1" placeholder="Balls Faced (e.g. 30)" required>
+                                </div>
+                            </div>
+                            
+                            <!-- VENUE INTELLIGENCE BADGE AREA -->
+                            <div class="col-12 mt-3">
+                                <div id="venue-badge-container" class="w-100" style="min-height: 10px; transition: all 0.3s ease;"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                      <label for="ballsFaced" class="form-label fw-bold"> Balls Faced</label>
-                      <input type="number" class="form-control form-control-lg" id="ballsFaced" name="total_balls" min="1" placeholder="e.g., 30" required>
+
+                    <!-- ACTION BUTTON -->
+                    <div class="text-center mt-5">
+                        <button type="submit" id="predictBtn" class="btn btn-primary btn-lg w-100 py-3 fw-bold text-uppercase position-relative overflow-hidden" 
+                            style="letter-spacing: 3px; border-radius: 12px; background: linear-gradient(90deg, #00f0ff, #7000ff); border: none; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);">
+                            <span class="position-relative z-index-1">Initialize Matchup Engine <i class="bi bi-cpu-fill ms-2"></i></span>
+                            <div class="absolute-glow" style="position: absolute; top:0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); transform: skewX(-20deg); animation: shimmer 3s infinite;"></div>
+                        </button>
                     </div>
-                  </div>
-    
-                  <div class="row mt-4 pt-2">
-                    <div class="col-12 d-grid">
-                      <button type="submit" id="predictBtn" class="btn btn-primary btn-lg fw-bold">
-                        <i class="bi bi-graph-up-arrow me-2"></i>Generate Prediction
-                      </button>
-                    </div>
-                  </div>
                 </form>
-              </div>
             </div>
             <div id="prediction-container" class="container mt-5">
+                <!-- VERDICT ROW (Top) -->
+                <div class="row mb-5">
+                    <div class="col-12 text-center">
+                        <div id="verdict-container" style="opacity: 0; transition: opacity 0.5s ease; min-height: 80px;"></div>
+                    </div>
+                </div>
+
                 <div class="row g-4 align-items-stretch">
                     
                     <div class="col-lg-3 d-flex" data-aos="fade-right" data-aos-delay="200">
@@ -239,6 +331,22 @@
                         <div id="bowler-card-container" class="w-100"></div>
                     </div>
                 </div>
+
+                <!-- Next Ball Probability Section -->
+                <div class="row mt-4" id="ball-probability-section" style="display: none;">
+                    <div class="col-lg-12">
+                        <div class="glass-panel p-4" data-aos="fade-up" data-aos-delay="600">
+                            <h5 class="text-uppercase text-light fw-bold mb-4 border-bottom border-secondary pb-2">
+                                <i class="bi bi-crosshair me-2 text-warning"></i>Next Ball Intelligence
+                            </h5>
+                            <div class="row g-3" id="outcome-bars">
+                                <!-- Bars will be injected here via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 align-items-stretch">
 
                 <div class="row mt-5">
                     <div class="col-12 text-center" data-aos="fade-up" data-aos-delay="700">

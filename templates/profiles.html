@@ -7,44 +7,79 @@
   <title>Player Profiles - Matchup Predictor</title>
 
   <link href="{{ url_for('static', filename='assets/img/favicon.png') }}" rel="icon">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Nunito:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+  <!-- Google Fonts: Space Grotesk & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
+  
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/vendor/aos/aos.css') }}" rel="stylesheet">
   <link href="{{ url_for('static', filename='assets/css/main.css') }}" rel="stylesheet">
+  <!-- Chart.js for Radar Graph -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    .header { background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    /* Header styling handled by main.css */
+    
+    /* PRISMATIC GLASS CARDS */
+    .stat-card, .player-card {
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.27);
+    }
+    
+    /* Gradient Border Highlight */
+    .stat-card::before, .player-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 20px;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.4), rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.1));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        pointer-events: none;
+    }
+
     .stat-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.07);
         padding: 25px;
         margin-bottom: 20px;
         height: 100%;
     }
+    
     .stat-card h4 {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Space Grotesk', sans-serif;
         font-weight: 700;
-        color: #0d6efd;
+        color: var(--accent-color);
         margin-bottom: 20px;
         text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
     }
+    
     .stat-item {
         display: flex;
         justify-content: space-between;
-        padding: 10px 0;
-        border-bottom: 1px solid #e9ecef;
+        padding: 12px 0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
     }
     .stat-item:last-child { border-bottom: none; }
-    .stat-item .label { font-weight: 500; color: #6c757d; }
-    .stat-item .value { font-weight: 700; color: #343a40; }
+    .stat-item .label { font-weight: 400; color: rgba(255,255,255,0.7); font-family: 'Outfit', sans-serif;}
+    .stat-item .value { font-weight: 700; color: #fff; text-shadow: 0 0 5px rgba(255,255,255,0.5); }
+    
     #results-area { transition: opacity 0.5s ease-in-out; }
 
     .player-card {
-        background: white;
-        border-radius: 15px;
-        box-shadow: 0 5px 25px rgba(0,0,0,0.08);
         padding: 30px 25px;
         text-align: center;
         height: 100%;
@@ -52,32 +87,60 @@
         flex-direction: column;
         justify-content: center;
     }
+    
+    .player-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 20px 50px -10px rgba(0, 240, 255, 0.2);
+    }
+    
+    .player-card:hover::before {
+        background: linear-gradient(135deg, var(--accent-color), transparent 60%);
+    }
+
     .player-card img {
         width: 150px;
         height: 150px;
         border-radius: 50%;
-        border: 5px solid #0d6efd;
+        border: 4px solid rgba(255,255,255,0.1);
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
         margin: 0 auto 15px auto;
         object-fit: cover;
-        background-color: #e9ecef;
+        background-color: #0b0f19;
+        transition: transform 0.4s ease;
     }
+    
+    .player-card:hover img {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 30px var(--accent-color);
+        transform: scale(1.1);
+    }
+
     .player-card h5 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
         font-weight: 700;
         margin-bottom: 5px;
-        font-family: 'Inter', sans-serif;
+        font-family: 'Space Grotesk', sans-serif;
+        color: #fff;
     }
     .player-card .player-role {
         font-weight: 700;
-        color: #0d6efd;
+        color: var(--accent-secondary);
         text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 1px;
+        font-size: 0.9rem;
+        letter-spacing: 2px;
     }
-    .player-card .player-detail {
-        font-size: 1rem;
-        color: #6c757d;
-        margin-top: 5px;
+    
+    /* PREVIEW AVATAR GLOW */
+    .preview-avatar {
+        border-radius: 50%;
+        border: 4px solid rgba(255,255,255,0.1);
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        transition: all 0.4s ease;
+    }
+    .col-md-5:hover .preview-avatar {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 30px var(--accent-color);
+        transform: scale(1.05) rotate(5deg);
     }
   </style>
 </head>
@@ -107,35 +170,67 @@
         <div class="container" data-aos-delay="100">
             <div id="alert-container"></div>
             
-            <div class="card border-0 shadow-lg rounded-4 mb-5">
-              <div class="card-body p-4 p-md-5">
-                <h4 class="card-title text-center mb-4 fw-bold">Find Player Profiles</h4>
+            <!-- Face-Off Arena -->
+            <div class="faceoff-container mb-5">
+                <h4 class="text-center mb-5 fw-bold" style="color: var(--heading-color);">Setup Matchup</h4>
+                
                 <div id="profile-form">
-                  <div class="row g-4 mb-4">
-                    <div class="col-md-6">
-                      <label for="player1" class="form-label fw-bold">Player 1</label>
-                      <select class="form-select form-select-lg" id="player1">
-                        <option value="" selected>Choose a player...</option>
-                        {% for p in all_players_list %}
-                        <option value="{{ p }}">{{ p }}</option>
-                        {% endfor %}
-                      </select>
+                    <div class="row align-items-center g-4">
+                        <!-- Player 1 Corner -->
+                        <div class="col-md-5 text-center">
+                            <div class="preview-avatar-container">
+                                <img src="https://ui-avatars.com/api/?name=P1&background=e9ecef&color=adb5bd&size=150" 
+                                     id="p1-preview" class="preview-avatar" alt="Player 1">
+                            </div>
+                            <label for="player1" class="form-label fw-bold d-block mb-2 text-light">Player 1</label>
+                            <select class="form-select form-select-lg text-center shadow-sm bg-dark text-white border-secondary" id="player1">
+                                <option value="" selected>Select Player...</option>
+                                {% for p in all_players_list %}
+                                <option value="{{ p }}">{{ p }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- VS Badge -->
+                        <div class="col-md-2">
+                            <div class="vs-badge-container">
+                                <span class="vs-badge">VS</span>
+                            </div>
+                        </div>
+
+                        <!-- Player 2 Corner -->
+                        <div class="col-md-5 text-center">
+                             <div class="preview-avatar-container">
+                                <img src="https://ui-avatars.com/api/?name=P2&background=e9ecef&color=adb5bd&size=150" 
+                                     id="p2-preview" class="preview-avatar" alt="Player 2">
+                            </div>
+                            <label for="player2" class="form-label fw-bold d-block mb-2 text-light">Player 2</label>
+                            <select class="form-select form-select-lg text-center shadow-sm bg-dark text-white border-secondary" id="player2">
+                                <option value="" selected>Select Player...</option>
+                                {% for p in all_players_list %}
+                                <option value="{{ p }}">{{ p }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                      <label for="player2" class="form-label fw-bold"> Player 2</label>
-                      <select class="form-select form-select-lg" id="player2">
-                        <option value="" selected>Choose a player...</option>
-                        {% for p in all_players_list %}
-                        <option value="{{ p }}">{{ p }}</option>
-                        {% endfor %}
-                      </select>
+
+                    <div class="row mt-5 pt-2">
+                        <div class="col-12 text-center">
+                            <button id="viewBtn" class="btn btn-primary btn-lg w-100 py-3 fw-bold text-uppercase position-relative overflow-hidden" disabled
+                                style="letter-spacing: 3px; border-radius: 12px; background: linear-gradient(90deg, #00f0ff, #7000ff); border: none; box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);">
+                                <span class="d-flex align-items-center justify-content-center gap-2 position-relative z-index-1">
+                                    <i class="bi bi-lightning-charge-fill"></i> Analyze Matchup
+                                </span>
+                                <div class="absolute-glow" style="position: absolute; top:0; left: -100%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent); transform: skewX(-20deg); animation: shimmer 3s infinite;"></div>
+                            </button>
+                            <style>
+                                @keyframes shimmer { 0% { left: -100%; } 20% { left: 200%; } 100% { left: 200%; } }
+                                #viewBtn:not(:disabled):hover { transform: scale(1.02); box-shadow: 0 0 40px rgba(112, 0, 255, 0.6); }
+                            </style>
+                        </div>
                     </div>
-                  </div>
-    
-                  <div class="row mt-4 pt-2">
-                    <div class="col-12 d-grid">
-                      <button id="viewBtn" class="btn btn-primary btn-lg fw-bold" disabled>
-                        <i class="bi bi-search me-2"></i>View Stats
+                </div>
+            </div>
                       </button>
                     </div>
                   </div>

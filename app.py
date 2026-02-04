@@ -84,7 +84,8 @@ except Exception as e:
 # ---------------------------------------------------
 models = {
     'runs': {},
-    'dismissals': {}
+    'dismissals': {},
+    'ball_outcome': {}
 }
 model_files = {
     'runs': {
@@ -94,6 +95,10 @@ model_files = {
     'dismissals': {
         'xgb': 'xgb_model_dismissals.joblib',
         'rf': 'rf_model_dismissals.joblib'
+    },
+    'ball_outcome': {
+        'xgb': 'xgb_ball_outcome.joblib',
+        'encoder': 'outcome_encoder.joblib'
     }
 }
 for model_type, type_files in model_files.items():
@@ -217,6 +222,50 @@ def predict():
     except Exception as e:
         logging.error(f"Prediction error: {e}", exc_info=True)
         return jsonify({"error": "An unexpected server error occurred."}), 500
+
+
+
+
+
+@app.route("/predict_next_ball", methods=["POST"])
+def predict_next_ball():
+    try:
+        data = request.form
+        batsman = data.get("batsman")
+        bowler = data.get("bowler")
+        venue = data.get("venue")
+
+        if not all([batsman, bowler, venue]):
+            return jsonify({"error": "Missing inputs"}), 400
+
+        # Load Model & Encoder
+        model = models.get('ball_outcome', {}).get('xgb')
+        encoder = models.get('ball_outcome', {}).get('encoder')
+
+        if not model or not encoder:
+            return jsonify({"error": "Ball Outcome Model not ready."}), 500
+
+        # Encode Features
+        batsman_encoded = name_to_encoding['batsman'].get(batsman)
+        bowler_encoded = name_to_encoding['bowler'].get(bowler)
+        venue_encoded = name_to_encoding['venue'].get(venue)
+
+        if None in [batsman_encoded, bowler_encoded, venue_encoded]:
+            return jsonify({"error": "Entity not found in training map."}), 400
+
+        # Predict Probabilities
+        features = np.array([[batsman_encoded, bowler_encoded, venue_encoded]])
+        probs = model.predict_proba(features)[0]
+        
+        # Map to Labels
+        class_labels = encoder.classes_
+        result = {str(label): round(float(prob) * 100, 1) for label, prob in zip(class_labels, probs)}
+
+        return jsonify(result)
+
+    except Exception as e:
+        logging.error(f"Ball Prediction Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 # --- API ENDPOINTS ---

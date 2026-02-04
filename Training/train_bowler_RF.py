@@ -1,9 +1,17 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, roc_auc_score
+# Updated metrics import to include all requested evaluations
+from sklearn.metrics import (
+    accuracy_score, roc_auc_score, confusion_matrix,
+    classification_report, precision_score, recall_score, f1_score,
+    roc_curve  # <-- Added roc_curve import
+)
 import joblib
 import os
+# Imports for visualization
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 # --- Configuration ---
 DATASET_PATH = "final_dataset.csv"
@@ -45,14 +53,76 @@ def train_bowler_model_rf():
     model = RandomForestClassifier(random_state=42, n_estimators=150, n_jobs=-1)
     model.fit(X_train, y_train)
 
-    # --- 5. Evaluate and Save the Model ---
+    # --- 5. Evaluate Model ---
     preds = model.predict(X_test)
     pred_proba = model.predict_proba(X_test)[:, 1]
-    print(f"   - Evaluation (Accuracy): {accuracy_score(y_test, preds):.2f}")
-    print(f"   - Evaluation (AUC Score): {roc_auc_score(y_test, pred_proba):.2f}")
 
+    # --- Detailed Metrics ---
+    print("\n" + " MODEL EVALUATION ".center(50, "-"))
+    
+    # Calculate metrics
+    acc = accuracy_score(y_test, preds)
+    auc = roc_auc_score(y_test, pred_proba)
+    # Note: These metrics are for the positive class (1 = 'Dismissed') by default
+    precision = precision_score(y_test, preds)
+    recall = recall_score(y_test, preds)
+    f1 = f1_score(y_test, preds)
+    
+    # Print simple metrics
+    print(f"  🔹 Accuracy:    {acc:.4f}")
+    print(f"  🔹 AUC Score:   {auc:.4f}")
+    print(f"  🔹 Precision:   {precision:.4f} (For 'Dismissed')")
+    print(f"  🔹 Recall:      {recall:.4f} (For 'Dismissed')")
+    print(f"  🔹 F1 Score:    {f1:.4f} (For 'Dismissed')")
+
+    # Classification Report
+    print("\n" + " Classification Report ".center(50, "-"))
+    report = classification_report(y_test, preds, target_names=['Not Dismissed (0)', 'Dismissed (1)'])
+    print(report)
+
+    # Confusion Matrix Heatmap
+    print("\n" + " Confusion Matrix ".center(50, "-"))
+    cm = confusion_matrix(y_test, preds)
+    
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=['Not Dismissed (0)', 'Dismissed (1)'], 
+                yticklabels=['Not Dismissed (0)', 'Dismissed (1)'])
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+    plt.title('Confusion Matrix for Dismissal Prediction')
+    plt.show() # This will display the plot in a new window
+    
+    print("Confusion Matrix plot displayed.")
+    print("-" * 50)
+
+    # --- START: Added code for ROC Curve ---
+    print("\n" + " ROC Curve ".center(50, "-"))
+    
+    # Calculate FPR (False Positive Rate) and TPR (True Positive Rate)
+    fpr, tpr, thresholds = roc_curve(y_test, pred_proba)
+
+    # Plot the ROC curve
+    plt.figure(figsize=(8, 6))
+    plt.plot(fpr, tpr, color='blue', label=f'ROC Curve (AUC = {auc:.4f})')
+    plt.plot([0, 1], [0, 1], color='red', linestyle='--', label='Random Guess (AUC = 0.5)')
+    
+    # Customize the plot
+    plt.xlabel('False Positive Rate (FPR)')
+    plt.ylabel('True Positive Rate (TPR)')
+    plt.title('Receiver Operating Characteristic (ROC) Curve')
+    plt.legend(loc="lower right")
+    plt.grid(True)
+    plt.show() # This will display the plot in a new window
+    
+    print("ROC Curve plot displayed.")
+    print("-" * 50)
+    # --- END: Added code for ROC Curve ---
+
+
+    # --- 6. Save Model ---
     joblib.dump(model, MODEL_FILENAME)
-    print(f"✅ Model saved successfully to '{MODEL_FILENAME}'")
+    print(f"\n✅ Model saved successfully to '{MODEL_FILENAME}'")
     print("=" * 60)
 
 if __name__ == '__main__':
